@@ -1,5 +1,6 @@
 bzip2
 expat
+gcc
 glib
 libX11
 libXau
