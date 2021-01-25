@@ -1,6 +1,7 @@
 atk
 fribidi
 gdk-pixbuf
+graphene
 libXcomposite
 libXcursor
 libXdamage
