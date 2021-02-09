@@ -2,6 +2,8 @@
 
 export LDFLAGS="$LDFLAGS -static"
 
+patch -p1 < fix-musl.patch
+
 ./configure \
     --prefix=/usr \
     --sbindir=/usr/bin \
