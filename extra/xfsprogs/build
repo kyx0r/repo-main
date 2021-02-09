@@ -20,7 +20,6 @@
     ninja -C output install
 )
 
-export PKG_CONFIG_PATH="$PWD/libinih/lib/pkgconfig:$PKG_CONFIG_PATH"
 export CFLAGS="$CFLAGS -I$PWD/libinih/include"
 export LDFLAGS="$LDFLAGS -L$PWD/libinih/lib"
 
