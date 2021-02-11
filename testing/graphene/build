@@ -5,7 +5,7 @@ export DESTDIR="$1"
 meson \
     --prefix=/usr \
     -Dinstalled_tests=false \
-    -Dintrospection=false \
+    -Dintrospection=disabled \
     . output
 
 ninja -C output
