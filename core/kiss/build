@@ -1,5 +1,8 @@
 #!/bin/sh -e
 
+# Allow 'ssu' usage (previously 'sls').
+sed -i 's/sls/ssu/g' kiss
+
 mkdir -p "$1/usr/bin"
 
 # Install kiss utilities.
