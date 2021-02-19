@@ -30,10 +30,6 @@ ninja -C build install
 {
     cd json-glib
 
-    # Don't re-clone subprojects
-    ln -s "$PWD/.."                    subprojects/glib
-    ln -s "$PWD/../subprojects/libffi" subprojects/libffi
-
     # This mess of CFLAGS, etc is needed to point json-glib to
     # the freshly built glib sources instead of the system's.
     export PKG_CONFIG_PATH="$1/usr/lib/pkgconfig:$PKG_CONFIG_PATH"
