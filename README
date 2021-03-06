@@ -1,5 +1,5 @@
 |/
-|\ISS                                                           https://k1ss.org
+|\ISS                                                      https://k1sslinux.org
 ________________________________________________________________________________
 
 
@@ -10,14 +10,14 @@ The official repositories for KISS Linux maintained by kiss-community.
 
 More information:
 
-    - https://kiss.armaanb.net
-    - https://kiss.armaanb.net/package-system
+    - https://k1sslinux.org
+    - https://k1sslinux.org/package-system
     - https://repology.org/repository/kiss_main
 
 Signature Verification
 ________________________________________________________________________________
 
-Enabling signature verification: https://kiss.armaanb.net/install#4.0
+Enabling signature verification: https://k1sslinux.org/install#4.0
 
 
 Dilyn Corner's public key:
