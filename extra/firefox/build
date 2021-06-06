@@ -1,8 +1,9 @@
 #!/bin/sh -e
+# Disable shellcheck - shouldn't be surprised by these assigments
+# shellcheck disable=2153
 
-for patch in *.patch; do
-    patch -p1 < "$patch"
-done
+patch -p1 < no-gtk2.patch
+patch -p1 < if_indextoname.patch
 
 # Remove libc header which conflicts with 7 or so Linux
 # kernel headers. See: https://github.com/kisslinux/repo/issues/207
@@ -38,8 +39,10 @@ export PATH="$PWD/junk/bin:$PATH"
 
 # Bypass 'ccache' as it's totally useless when building
 # Firefox and only slows things down.
-export CC="${CC:-/usr/bin/cc}"
-export CXX="${CXX:-/usr/bin/c++}"
+export CC=${CC:-/usr/bin/clang}
+export CXX=${CXX:-/usr/bin/clang++}
+export CXXFLAGS="$CXXFLAGS -I/usr/include/c++/11.1.0"
+export CXXFLAGS="$CXXFLAGS -I/usr/include/c++/11.1.0/$(gcc -dumpmachine)"
 
 export RUSTFLAGS="$RUSTFLAGS -Cdebuginfo=0"
 export LDFLAGS="$LDFLAGS -Wl,-rpath=/usr/lib/firefox"
