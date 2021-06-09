@@ -1,6 +1,6 @@
 #!/bin/sh -e
 # Disable shellcheck - shouldn't be surprised by these assigments
-# shellcheck disable=2153
+# shellcheck disable=2153,2155
 
 patch -p1 < no-gtk2.patch
 patch -p1 < if_indextoname.patch
