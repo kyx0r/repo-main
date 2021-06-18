@@ -1,12 +1,13 @@
 #!/bin/sh -e
 
 patch -p1 < libressl.patch
+patch -p1 < cargo-miri.patch
 
 # This package mimics the download process of rust's 'x.py'
 # bootstrap library to allow for the removal of the internet
 # connection requirement per build.
 {
-    mkdir -p "${cache_dir:=build/cache/2021-03-25}"
+    mkdir -p "${cache_dir:=build/cache/2021-05-06}"
 
     for tarball in *.tar.xz\?no-extract; do
         mv -f "$tarball" "$cache_dir/${tarball%%\?no-extract}"
