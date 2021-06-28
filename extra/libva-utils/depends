@@ -1,3 +1,4 @@
 libva
 mesa    make
+meson   make
 pkgconf make
