@@ -1,0 +1,17 @@
+#!/bin/sh -e
+
+cat << EOF
+
+NOTE!
+
+This repository is no longer being maintained as the proper upstream repository
+of KISS Linux! Please switch your remote to https://github.com/kisslinux/repo.
+
+Dylan is back :)
+
+
+This repository is currently unmaintained. If you have some interest in
+maintaining a Xorg and libressl repository for the broader community, you are
+welcome to take over this repository at the Org! Visit us in IRC to discuss.
+
+This repository will be archived at the end of July, 2021 otherwise.
