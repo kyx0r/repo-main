@@ -1,18 +1,13 @@
 #!/bin/sh -e
 
 cat << EOF
-
-NOTE!
-
 This repository is no longer being maintained as the proper upstream repository
 of KISS Linux! Please switch your remote to https://github.com/kisslinux/repo.
 
-Dylan is back :)
+It's the final 24 hours!!!
 
-
-This repository is currently unmaintained. If you have some interest in
-maintaining a Xorg and libressl repository for the broader community, you are
-welcome to take over this repository at the Org! Visit us in IRC to discuss.
-
-This repository will be archived at the end of July, 2021 otherwise.
+Because nobody has spoken up with a desire to take over this repository, it will
+be archived on July 31st, 11:59:59PM GTM-4. If you would like to maintain an
+officially unofficial, libressl+Xorg version of the official repository, please
+get in contact with us at #kisslinux on libera!
 EOF
