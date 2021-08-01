@@ -1,13 +1,8 @@
 #!/bin/sh -e
 
 cat << EOF
-This repository is no longer being maintained as the proper upstream repository
-of KISS Linux! Please switch your remote to https://github.com/kisslinux/repo.
-
-It's the final 24 hours!!!
-
-Because nobody has spoken up with a desire to take over this repository, it will
-be archived on July 31st, 11:59:59PM GTM-4. If you would like to maintain an
-officially unofficial, libressl+Xorg version of the official repository, please
-get in contact with us at #kisslinux on libera!
+This repository is being maintained as an experiment to the BUS factor.
+If people fear and run to openssl then we explore the other path.
+If the experiment turns out to be successful, this might ressurect old
+remote. https://github.com/kiss-community/repo
 EOF
