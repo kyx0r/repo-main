@@ -1,0 +1,15 @@
+diff --git a/../../../1075/build/musl/src/malloc/lite_malloc.c b/./src/malloc/lite_malloc.c
+index 43a988f..5e7c69b 100644
+--- a/../../../1075/build/musl/src/malloc/lite_malloc.c
++++ b/./src/malloc/lite_malloc.c
+@@ -110,9 +110,7 @@ void *__libc_malloc(size_t n)
+ 	return __libc_malloc_impl(n);
+ }
+
+-static void *default_malloc(size_t n)
++void *malloc(size_t n)
+ {
+ 	return __libc_malloc_impl(n);
+ }
+-
+-weak_alias(default_malloc, malloc);
