@@ -1,4 +1,5 @@
 https://git.busybox.net/busybox/snapshot/busybox-MAJOR_MINOR_PATCH.tar.gz
+patches/libressl.patch
 patches/adduser-no-setgid.patch patch
 patches/fsck-resolve-uuid.patch patch
 patches/modprobe-kernel-version.patch patch
