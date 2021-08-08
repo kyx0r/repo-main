@@ -1,12 +1,11 @@
 #!/bin/sh -e
 
-export DESTDIR="$1"
-
 meson \
     --prefix=/usr \
     --sysconfdir=/etc \
     --mandir=/usr/share/man \
     -Dhas-dlvsym=false \
+    -Dtests=false \
     . output
 
 ninja -C output

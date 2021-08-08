@@ -1,17 +1,23 @@
 #!/bin/sh -e
 
-# Remove 'atk-bridge' dependency which removes the 'dbus' dependency.
-sed -i 's/ATK_PACKAGES="atk atk-bridge-2.0"/ATK_PACKAGES="atk"/' \
-    configure
+patch -p1 < no-fribidi.patch
 
-sed -i '/<atk-bridge.h>/d;/atk_bridge_adaptor_init/d' \
-    gtk/a11y/gtkaccessibility.c
+# Remove configure check for atk-bridge and fribidi.
+sed -e 's/\(ATK_PACKAGES="atk\) atk-bridge-2.0"/\1"/' \
+    -e 's/fribidi >= 0\.19\.7//g' \
+    configure > _
+mv -f _ configure
+
+# Remove atk-bridge code.
+sed '/<atk-bridge.h>/d;/atk_bridge_adaptor_init/d' \
+    gtk/a11y/gtkaccessibility.c > _
+mv -f _ gtk/a11y/gtkaccessibility.c
 
 # Don't build GTK examples/demos/testsuite.
-sed -i 's/demos tests testsuite examples//' Makefile.am Makefile.in
-sed -i 's/docs m4macros/m4macros/'          Makefile.am Makefile.in
+sed 's/demos tests testsuite examples//;s/docs \(m4macros\)/\1/' Makefile.in > _
+mv -f _ Makefile.in
 
-./configure \
+sh ./configure \
     --prefix=/usr \
     --sysconfdir=/etc \
     --localstatedir=/var \
@@ -34,7 +40,7 @@ sed -i 's/docs m4macros/m4macros/'          Makefile.am Makefile.in
     --enable-gtk-doc-html=no
 
 make
-make DESTDIR="$1" install
+make install
 
 # We don't compile with librsvg which leads to this
 # utility solely causing compiler errors for some

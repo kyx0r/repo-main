@@ -8,3 +8,4 @@ libXrandr
 mesa
 pkgconf make
 python  make
+linux-headers make

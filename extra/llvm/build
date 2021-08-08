@@ -1,6 +1,9 @@
 #!/bin/sh -e
 
-export DESTDIR="$1"
+# Remove ncurses dependency.
+sed 's/\(LLVM_ENABLE_TERMINFO\) 1/\1 2/' \
+    cmake/config-ix.cmake > _
+mv -f _ cmake/config-ix.cmake
 
 cmake -B build \
     -DCMAKE_INSTALL_PREFIX=/usr \
@@ -14,6 +17,7 @@ cmake -B build \
     -DLLVM_INCLUDE_EXAMPLES=OFF \
     -DLLVM_INCLUDE_DOCS=OFF \
     -DLLVM_INCLUDE_TESTS=OFF \
+    -DLLVM_ENABLE_TERMINFO=OFF \
     -DLLVM_ENABLE_LIBXML2=OFF \
     -Wno-dev
 
