@@ -13,6 +13,7 @@ libXrandr
 glib
 libepoxy
 libxkbcommon
+mesa
 meson   make
 pango
 pkgconf make
