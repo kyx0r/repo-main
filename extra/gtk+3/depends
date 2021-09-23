@@ -1,7 +1,4 @@
 atk
-cairo
-fontconfig
-freetype-harfbuzz
 gdk-pixbuf
 libXcomposite
 libXcursor
@@ -10,11 +7,7 @@ libXext
 libXi
 libXinerama
 libXrandr
-glib
 libepoxy
-libxkbcommon
-mesa
-meson   make
 pango
 pkgconf make
 python  make
