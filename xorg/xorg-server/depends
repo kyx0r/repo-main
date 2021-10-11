@@ -11,12 +11,12 @@ libdrm
 libepoxy
 libfontenc
 libpciaccess
-libressl
 libxcb
 libxkbfile
 libxshmfence
 linux-headers make
 mesa
+libressl
 pixman
 pkgconf make
 xkeyboard-config
