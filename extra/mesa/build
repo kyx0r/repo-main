@@ -42,9 +42,12 @@ meson \
     --mandir=/usr/share/man \
     --localstatedir=/var \
     --buildtype=release \
+    -Dglx-read-only-text=true \
+    -Dplatforms=x11 \
+    -Dglx=auto \
+    -Degl=enabled \
     -Dvalgrind=false \
     -Dzstd=false \
-    -Dplatforms=x11 \
     -Dglvnd="${glvnd_enabled:-false}" \
     . output
 
