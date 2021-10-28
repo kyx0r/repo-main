@@ -4,7 +4,9 @@ meson \
     --prefix=/usr \
     --sysconfdir=/etc \
     --mandir=/usr/share/man \
-    -Dintrospection=false \
+    -Dwith_wayland=no \
+    -Dwith_x11=yes \
+    -Dwith_glx=yes \
     . output
 
 ninja -C output
