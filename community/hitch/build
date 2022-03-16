@@ -1,0 +1,8 @@
+#!/bin/sh -e
+
+patch -p1 < priv-libressl.patch
+
+./bootstrap --disable-documentation --prefix=/usr
+cd src
+make
+make DESTDIR="$1" install

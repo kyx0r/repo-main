@@ -7,6 +7,10 @@ Unofficial Libressl+Xorg Main Repository
 ________________________________________________________________________________
 
 The officially unofficial repository for KISS Linux maintained by kiss-community
+This repository is tailored to eliminate as most of bad software as possible.
+The software in /community is what I use and maintain. Some are kept at specific
+versions for good reasons, for example software quality degradation over time.
+If something does not make sense to me, most likely it will be removed.
 
 More information:
 

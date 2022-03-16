@@ -1,0 +1,77 @@
+diff --git a/src/hitch.c b/src/hitch.c
+index e04e4f3..c1ab744 100644
+--- a/src/hitch.c
++++ b/src/hitch.c
+@@ -947,7 +947,7 @@ client_vfy_init(SSL_CTX *ctx, int flags, const char *cafile)
+ 		return (1);
+ 	}
+ 
+-	SSL_CTX_set1_verify_cert_store(ctx, vfy);
++	//SSL_CTX_set1_verify_cert_store(ctx, vfy);
+ 
+ #ifdef HAVE_X509_STORE_GET0_OBJECTS
+ 	objs = X509_STORE_get0_objects(vfy);
+@@ -1049,13 +1049,6 @@ make_ctx_fr(const struct cfg_cert_file *cf, const struct frontend *fr,
+ 	}
+ 
+ #if HAVE_TLS_1_3
+-	if (ciphersuites != NULL) {
+-		if (SSL_CTX_set_ciphersuites(ctx, ciphersuites) != 1) {
+-			log_ssl_error(NULL, "{core} SSL_CTX_set_ciphersuites");
+-			return (NULL);
+-		}
+-	}
+-#else
+ 	(void) ciphersuites;
+ #endif
+ 	if (client_verify != SSL_VERIFY_NONE) {
+@@ -3250,19 +3243,6 @@ drop_privileges(void)
+ #endif
+ }
+ 
+-static int
+-verify_privileges(void)
+-{
+-	if (geteuid() == 0 &&
+-	    !(CONFIG->UID == 0 && CONFIG->GID == 0)) {
+-		ERR("{core} ERROR: "
+-		    "Refusing to run workers as root, "
+-		    "unless user and group is explicitly set"
+-		    " to root.\n");
+-		return (0);
+-	}
+-	return (1);
+-}
+ 
+ static int
+ backaddr_init_uds(void)
+@@ -3407,8 +3387,6 @@ start_workers(int start_index, int count)
+ 				change_root();
+ 			if (CONFIG->UID >= 0 || CONFIG->GID >= 0)
+ 				drop_privileges();
+-			if (!verify_privileges())
+-				_exit(1);
+ 			handle_connections(pfd[0]);
+ 			exit(0);
+ 		} else { /* parent. Track new child. */
+@@ -3429,8 +3407,6 @@ start_ocsp_proc(void)
+ 	} else if (ocsp_proc_pid == 0) {
+ 		if (CONFIG->UID >= 0 || CONFIG->GID >= 0)
+ 			drop_privileges();
+-		if (!verify_privileges())
+-			_exit(1);
+ 		handle_ocsp_task();
+ 	}
+ 
+@@ -4245,11 +4221,6 @@ main(int argc, char **argv)
+ 		exit(1);
+ 	}
+ 
+-	if (geteuid() == 0 && CONFIG->UID < 0) {
+-		ERR("{core} ERROR: Refusing to run workers as root.\n");
+-		exit(1);
+-	}
+-
+ 	if (CONFIG->DAEMONIZE) {
+ 		if (!CONFIG->SYSLOG && !CONFIG->LOG_FILENAME) {
+ 			LOG("{core} Warning: daemonizing with neither "
