@@ -12,7 +12,7 @@
     make install
 )
 
-(
+if ! command -v yasm; then (
     cd yasm
 
     ./configure \
@@ -20,19 +20,21 @@
 
     make
     make DESTDIR="$PWD/../junk" install
-)
+); fi
 
-for f in zip unzip; do (
-    cd "$f"
+for f in zip unzip; do
+    if ! kiss list "$f"; then (
+        cd "$f"
 
-    make \
-        CC="$CC $CFLAGS $CXXFLAGS" \
-        -f unix/Makefile generic
+        make \
+            CC="$CC $CFLAGS $CXXFLAGS" \
+            -f unix/Makefile generic
 
-    make \
-        prefix="$PWD/../junk" \
-        -f unix/Makefile install
-) done
+        make \
+            prefix="$PWD/../junk" \
+            -f unix/Makefile install
+    ); fi
+done
 
 export PATH="$PWD/junk/bin:$PATH"
 
@@ -44,7 +46,10 @@ done
 
 export LDFLAGS="$LDFLAGS -Wl,-rpath=/usr/lib/browser"
 
+# Apparently `mach` is now a *bash* script, yet it's marked as /bin/sh.
+# So we just delete the offending code.
 printf '#!/bin/sh\n./platform/mach $@' > ./mach
+
 ./mach build
 ./mach stage
 
