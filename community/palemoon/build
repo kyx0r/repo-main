@@ -44,6 +44,7 @@ done
 
 export LDFLAGS="$LDFLAGS -Wl,-rpath=/usr/lib/browser"
 
+printf '#!/bin/sh\n./platform/mach $@' > ./mach
 ./mach build
 ./mach stage
 
