@@ -1,5 +1,8 @@
 #!/bin/sh -e
 
+export DESTDIR="$1"
+
+
 # Build autoconf 2.13 for browser's sole use.
 (
     cd autoconf2.13
@@ -36,19 +39,18 @@ for f in zip unzip; do
     ); fi
 done
 
+git clone --depth=1 --recursive https://repo.palemoon.org/MoonchildProductions/Pale-Moon.git
+
 export PATH="$PWD/junk/bin:$PATH"
 
-sed -e 's#%SRCDIR%#'"$(realpath .)"'#g' -e "s#%CFLAGS%#$CFLAGS#g" mozconfig.in > .mozconfig
+sed -e 's#%SRCDIR%#'"$(realpath .)"'#g' -e "s#%CFLAGS%#$CFLAGS#g" mozconfig.in > ./Pale-Moon/.mozconfig
 
-for patch in *.patch; do
+cd ./Pale-Moon
+for patch in ../*.patch; do
     patch -p1 < "$patch"
 done
 
 export LDFLAGS="$LDFLAGS -Wl,-rpath=/usr/lib/browser"
-
-# Apparently `mach` is now a *bash* script, yet it's marked as /bin/sh.
-# So we just delete the offending code.
-printf '#!/bin/sh\n./platform/mach $@' > ./mach
 
 ./mach build
 ./mach stage
@@ -56,5 +58,5 @@ printf '#!/bin/sh\n./platform/mach $@' > ./mach
 mkdir -p "$1/usr/bin"
 mkdir -p "$1/usr/lib"
 
-cp -r objdir/dist/palemoon "$1/usr/lib/browser"
+cp -r ../objdir/dist/palemoon "$1/usr/lib/browser"
 ln -s ../lib/browser/palemoon "$1/usr/bin/browser"

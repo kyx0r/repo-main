@@ -23,8 +23,8 @@ index e232f3443..2d1de20b3 100644
      'imptests',
  ]
  
--if CONFIG['MOZ_WIDGET_TOOLKIT'] in ('gtk2', 'gtk3', 'windows', 'android'):
-+if CONFIG['MOZ_WIDGET_TOOLKIT'] in ('gtk3', 'windows', 'android'):
+-if CONFIG['MOZ_WIDGET_TOOLKIT'] in ('gtk2', 'gtk3', 'windows'):
++if CONFIG['MOZ_WIDGET_TOOLKIT'] in ('gtk3', 'windows'):
      TEST_DIRS += ['plugins/test']
  
 diff --git a/platform/dom/plugins/base/moz.build b/platform/dom/plugins/base/moz.build
