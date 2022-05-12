@@ -4,7 +4,6 @@ meson \
     --prefix=/usr \
     --sysconfdir=/etc \
     --mandir=/usr/share/man \
-    -Dhas-dlvsym=false \
     -Dtests=false \
     . output
 
