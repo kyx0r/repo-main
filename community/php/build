@@ -13,5 +13,20 @@ install -Dm755 sapi/cgi/php-cgi "$1/usr/bin/php-cgi"
 install -Dm755 sapi/cgi/php-cgi.1 "$1/usr/share/man/man1/php-cgi.1"
 install -Dm755 sapi/phpdbg/phpdbg "$1/usr/bin/phpdbg"
 install -Dm755 sapi/phpdbg/phpdbg.1 "$1/usr/share/man/man1/phpdbg.1"
-mkdir -p "$1/usr/include/php/"
-cp ext/standard/*.h "$1/usr/include/php/"
+
+#enable includes when needed.
+
+#mkdir -p "$1/usr/include/php/ext/standard/"
+#cp ext/standard/*.h "$1/usr/include/php/ext/standard/"
+#
+#mkdir -p "$1/usr/include/php/main/"
+#cp main/*.h "$1/usr/include/php/main/"
+#
+#mkdir -p "$1/usr/include/php/main/streams/"
+#cp main/streams/*.h "$1/usr/include/php/main/streams/"
+#
+#mkdir -p "$1/usr/include/php/Zend/"
+#cp Zend/*.h "$1/usr/include/php/Zend/"
+#
+#mkdir -p "$1/usr/include/php/Zend/Optimizer/"
+#cp Zend/Optimizer/*.h "$1/usr/include/php/Zend/Optimizer/"
