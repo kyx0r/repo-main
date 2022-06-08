@@ -1,5 +1,7 @@
 #!/bin/sh -e
 
+patch -p1 < add-av_stream_get_first_dts-for-chromium.patch
+
 ./configure \
     --cc="$CC" \
     --cxx="$CXX" \
@@ -7,6 +9,11 @@
     --disable-debug \
     --disable-libxml2 \
     --disable-static \
+    --disable-libxcb \
+    --disable-libxcb-shm \
+    --disable-libxcb-xfixes \
+    --disable-libxcb-shape \
+    --disable-xlib \
     --enable-gpl \
     --enable-libass \
     --enable-libdrm \
@@ -19,6 +26,7 @@
     --enable-libx265 \
     --enable-libxvid \
     --enable-nonfree \
+    --enable-openssl \
     --enable-shared \
     --enable-version3 \
     --x86asmexe=nasm \
