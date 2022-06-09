@@ -1,19 +1,17 @@
 #!/bin/sh -e
 
+export DESTDIR="$1"
+
+
 patch -p1 < add-av_stream_get_first_dts-for-chromium.patch
 
 ./configure \
-    --cc="$CC" \
-    --cxx="$CXX" \
+    --cc="${CC:-cc}" \
+    --cxx="${CXX:-c++}" \
     --prefix=/usr \
     --disable-debug \
     --disable-libxml2 \
     --disable-static \
-    --disable-libxcb \
-    --disable-libxcb-shm \
-    --disable-libxcb-xfixes \
-    --disable-libxcb-shape \
-    --disable-xlib \
     --enable-gpl \
     --enable-libass \
     --enable-libdrm \
@@ -29,7 +27,7 @@ patch -p1 < add-av_stream_get_first_dts-for-chromium.patch
     --enable-openssl \
     --enable-shared \
     --enable-version3 \
-    --x86asmexe=nasm \
+    --x86asmexe=nasm
 
 make
 make install

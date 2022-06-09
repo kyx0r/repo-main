@@ -1,5 +1,7 @@
 #!/bin/sh -e
 
+export DESTDIR="$1"
+
 # Setup docutils to generate manual pages.
 {
     cd docutils
@@ -17,14 +19,16 @@
     export PYTHONPATH
 }
 
-python waf/waf configure \
-    --prefix=/usr \
-    --mandir=/usr/share/man \
-    --confdir=/etc/mpv \
-    --enable-alsa \
+meson setup \
+    -Dprefix=/usr \
+    -Dmandir=/usr/share/man \
+    -Dalsa=enabled \
+    -Dwayland=disabled \
+    -Dx11=enabled \
+    output
 
-python waf/waf build
-python waf/waf install --destdir="$1"
+ninja -C output
+ninja -C output install
 
 rm -rf \
     "$1/usr/share/zsh" \

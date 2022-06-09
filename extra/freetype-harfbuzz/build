@@ -1,15 +1,18 @@
 #!/bin/sh -e
 
+export DESTDIR="$1"
+
+
 build_freetype() (
     cd freetype
 
-    meson \
-        --prefix=/usr \
+    meson setup \
+        -Dprefix=/usr \
         -Ddefault_library=both \
         -Dbzip2=disabled \
         -Dzlib=disabled \
         "$@" \
-        . output
+        output
 
     ninja -C output
     ninja -C output install
@@ -18,8 +21,8 @@ build_freetype() (
 build_harfbuzz() (
     cd harfbuzz
 
-    meson \
-        --prefix=/usr \
+    meson setup \
+        -Dprefix=/usr \
         -Dpkg_config_path="$DESTDIR/usr/lib/pkgconfig" \
         -Ddefault_library=both \
         -Dglib=disabled \
@@ -29,7 +32,7 @@ build_harfbuzz() (
         -Dicu=disabled \
         -Dbenchmark=disabled \
         -Dtests=disabled \
-        . output
+        output
 
     ninja -C output
     ninja -C output install
@@ -38,7 +41,7 @@ build_harfbuzz() (
 # Point Freetype to the Harfbuzz files.
 export CFLAGS="$CFLAGS -I$DESTDIR/usr/include/harfbuzz"
 export CFLAGS="$CFLAGS -L$DESTDIR/usr/lib "
-export PKG_CONFIG_PATH=$DESTDIR/usr/lib/pkgconfig
+export PKG_CONFIG_PATH="$DESTDIR/usr/lib/pkgconfig"
 
 # Point Harfbuzz to the Freetype files.
 export CXXFLAGS="$CXXFLAGS -I$DESTDIR/usr/include/freetype2"

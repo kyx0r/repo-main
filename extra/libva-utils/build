@@ -1,10 +1,12 @@
 #!/bin/sh -e
 
-meson \
-    --prefix=/usr \
-    --sysconfdir=/etc \
-    --mandir=/usr/share/man \
-    . output
+export DESTDIR="$1"
+
+meson setup \
+    -Dprefix=/usr \
+    -Dsysconfdir=/etc \
+    -Dmandir=/usr/share/man \
+    output
 
 ninja -C output
 ninja -C output install
