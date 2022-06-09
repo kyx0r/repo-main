@@ -15,7 +15,6 @@ PREFIX=/usr
 MANDIR=/usr/share/man
 LIBDIR=/usr/lib
 SBINDIR=/usr/bin
-CFLAGS="$CFLAGS -fcommon"
 LN="ln -sf"
 EOF
 

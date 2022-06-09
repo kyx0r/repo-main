@@ -20,7 +20,6 @@ meson \
     -Dinstalled_tests=false \
     -Ddefault_library=both \
     -Dman=false \
-    -Dfam=false \
     . build
 
 ninja -C build

@@ -1,1 +1,3 @@
 https://github.com/rhboot/efivar/archive/VERSION.tar.gz
+patches/musl-compat.patch
+patches/no-add-needed.patch
