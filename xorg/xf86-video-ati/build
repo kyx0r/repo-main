@@ -1,5 +1,7 @@
 #!/bin/sh -e
 
+export DESTDIR="$1"
+
 patch -p1 < rootless_modesetting.patch
 ed src/radeon_kms.c <<EOF
 934a
@@ -22,7 +24,7 @@ mv -f _ src/radeon_kms.c
 export LDFLAGS="$LDFLAGS -Wl,-z,lazy"
 export CFLAGS="$CFLAGS -fcommon"
 
-NOCONFIGURE=1 ./autogen.sh
+autoreconf -vif
 ./configure \
     --prefix=/usr
 
