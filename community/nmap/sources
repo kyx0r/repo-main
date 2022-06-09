@@ -1,1 +1,2 @@
-https://nmap.org/dist/nmap-7.92.tar.bz2
+git+https://github.com/nmap/nmap.git
+libresslfix.patch
