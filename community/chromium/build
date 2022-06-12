@@ -9,6 +9,8 @@ kiss list musl && {
     done
 }
 
+patch -p1 < std_exchange_fix.patch
+
 # Saves me from having to fork this package just for 2 patches.
 kiss list glibc && {
     for patch in glibc-*.patch; do
@@ -34,8 +36,6 @@ python ungoogled-chromium/utils/domain_substitution.py apply \
     -r ungoogled-chromium/domain_regex.list \
     -f ungoogled-chromium/domain_substitution.list \
     -c domainsubcache.tar.gz ./
-
-patch -p1 < ungoogled-safebrowsing.patch
 
 mkdir -p third_party/node/linux/node-linux-x64/bin
 ln -s /usr/bin/node third_party/node/linux/node-linux-x64/bin/
@@ -69,8 +69,7 @@ mv -f _ ui/ozone/platform/wayland/host/wayland_window.cc
 # compile gn early, so it can be used to generate gni stuff.
 ./tools/gn/bootstrap/bootstrap.py --skip-generate-buildfiles
 
-# ffmpeg: abi will break soon
-# freetype: syslib broken
+#    ffmpeg
 # harfbuzz-ng: syslib broken
 # icu: Breakage on updates.
 # libevent: Random freezes with javascript.
@@ -82,9 +81,12 @@ mv -f _ ui/ozone/platform/wayland/host/wayland_window.cc
 system="
     flac
     fontconfig
+    freetype
+    harfbuzz-ng
     libdrm
     libjpeg
     libwebp
+    libxslt
     opus
 "
 
@@ -112,8 +114,9 @@ done
 ./third_party/libaddressinput/chromium/tools/update-strings.py
 
 # 'clang' builds are untested but should most likely work fine with our flags.
-case $("$CC" --version) in (*clang*)
+case $("$CC" --version) in  *clang*)
     clang=true
+    ;;
 esac
 
 kiss list libva && vaapi=true
@@ -121,7 +124,7 @@ kiss list pipewire && pipewire=true
 
 conf="
     angle_enable_null=true
-    angle_enable_swiftshader=true
+    angle_enable_swiftshader=false
     blink_enable_generated_code_formatting=false
     blink_symbol_level=0
     clang_use_chrome_plugins=false
@@ -195,7 +198,7 @@ out/Release/gn gen out/Release --args="$conf"
 #
 # -n is non-POSIX hence we "attempt".
 # shellcheck disable=2039
-ulimit -n 4096 2>/dev/null || :
+ulimit -n 4096 2> /dev/null || :
 
 ninja -C out/Release chrome
 

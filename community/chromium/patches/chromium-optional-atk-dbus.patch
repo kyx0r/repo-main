@@ -49,7 +49,7 @@ index a08be4c..55f3824 100644
 +#if defined(OS_LINUX) && defined(USE_DBUS) || defined(OS_CHROMEOS)
  #include "device/bluetooth/dbus/bluez_dbus_manager.h"
  #endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
- 
+
 @@ -55,7 +55,7 @@ void ReportBluetoothAvailability() {
      return;
    }
@@ -123,16 +123,13 @@ index 2fa8e06..329fa52 100644
    return true;
  #else
 @@ -69,7 +69,7 @@ bool BluetoothAdapterFactory::IsLowEnergySupported() {
-   return base::win::GetVersion() >= base::win::Version::WIN10;
- #elif defined(OS_MAC)
-   return true;
--#elif (defined(OS_LINUX) || defined(OS_CHROMEOS))
-+#elif (defined(OS_LINUX) && defined(USE_DBUS) || defined(OS_CHROMEOS))
-   return true;
- #else
-   return false;
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(OS_LINUX) || \
+-    defined(OS_MAC)
++    defined(OS_MAC) && defined(USE_DBUS)
+  return true;
+#elif defined(OS_WIN)
 diff --git a/extensions/browser/api/bluetooth_low_energy/bluetooth_low_energy_api.cc b/extensions/browser/api/bluetooth_low_energy/bluetooth_low_energy_api.cc
-index 1dea6d4..41e60b5 100644
+index 169712a..bc22a0b 100644
 --- a/extensions/browser/api/bluetooth_low_energy/bluetooth_low_energy_api.cc
 +++ b/extensions/browser/api/bluetooth_low_energy/bluetooth_low_energy_api.cc
 @@ -1338,7 +1338,7 @@ void BluetoothLowEnergyCreateServiceFunction::DoWork() {
@@ -181,10 +178,10 @@ index 1dea6d4..41e60b5 100644
  
  // registerService:
 diff --git a/services/device/battery/battery_status_manager_default.cc b/services/device/battery/battery_status_manager_default.cc
-index 3526876..dbaa872 100644
+index fe24b5a..dd2c598 100644
 --- a/services/device/battery/battery_status_manager_default.cc
 +++ b/services/device/battery/battery_status_manager_default.cc
-@@ -22,11 +22,10 @@ class BatteryStatusManagerDefault : public BatteryStatusManager {
+@@ -27,11 +27,10 @@ class BatteryStatusManagerDefault : public BatteryStatusManager {
   private:
    // BatteryStatusManager:
    bool StartListeningBatteryChange() override {
@@ -194,9 +191,9 @@ index 3526876..dbaa872 100644
  
 -  void StopListeningBatteryChange() override { NOTIMPLEMENTED(); }
 +  void StopListeningBatteryChange() override { }
- 
-   DISALLOW_COPY_AND_ASSIGN(BatteryStatusManagerDefault);
  };
+ 
+ }  // namespace
 diff --git a/services/device/wake_lock/power_save_blocker/BUILD.gn b/services/device/wake_lock/power_save_blocker/BUILD.gn
 index 5bc4ea6..8199154 100644
 --- a/services/device/wake_lock/power_save_blocker/BUILD.gn
