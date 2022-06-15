@@ -1,0 +1,13 @@
+#!/bin/sh
+
+./autogen.sh
+
+./configure \
+  --prefix=/usr
+
+
+make
+make install
+
+chmod u+s "$1/usr/bin/Xfbdev"
+chmod u+s "$1/usr/bin/Xvesa"
