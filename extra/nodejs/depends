@@ -1,5 +1,4 @@
 linux-headers make
-libressl
 python        make
 samurai       make
 zlib
