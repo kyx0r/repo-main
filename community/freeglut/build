@@ -1,12 +1,11 @@
 #!/bin/sh -e
 
-patch -p1 < fno-common.patch
-
-export DESTDIR="$1"
+export CFLAGS="$CFLAGS"
 
 cmake -B build \
     -DCMAKE_INSTALL_PREFIX=/usr \
-    -DCMAKE_INSTALL_LIBDIR=lib
+    -DCMAKE_INSTALL_LIBDIR=lib \
+    -DFREEGLUT_BUILD_DEMOS=OFF
 
 cmake --build   build
 cmake --install build

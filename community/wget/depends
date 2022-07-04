@@ -1,1 +1,4 @@
+make
 libressl
+pkgconf
+zlib
