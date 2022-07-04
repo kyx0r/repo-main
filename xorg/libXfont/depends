@@ -1,3 +1,4 @@
 freetype-harfbuzz
 libfontenc
-zlib
+pkgconf   make
+xorgproto make
