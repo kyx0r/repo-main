@@ -25,9 +25,8 @@ case $2 in "${gcc_version%%.*}"*)
     bootstrap=--disable-bootstrap
 esac
 
-export libat_cv_have_ifunc=no
-
 ../gcc/configure \
+    libat_cv_have_ifunc=no \
     --prefix=/usr \
     --libexecdir=/usr/lib \
     --mandir=/usr/share/man \
