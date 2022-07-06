@@ -1,0 +1,13 @@
+diff --git a/openssl-compat.h_ b/openssl-compat.h
+index a23e342..158fd23 100644
+--- a/openssl-compat.h_
++++ b/openssl-compat.h
+@@ -40,7 +40,7 @@ static inline BIO_METHOD *BIO_meth_new(int type, const char *name)
+ #endif /* (OPENSSL_VERSION_NUMBER < 0x10100000L) || \
+ 	(defined(LIBRESSL_VERSION_NUMBER) && LIBRESSL_VERSION_NUMBER < 0x20700000L) */
+ 
+-#if defined(LIBRESSL_VERSION_NUMBER) && LIBRESSL_VERSION_NUMBER >= 0x20700000L
++#if defined(LIBRESSL_VERSION_NUMBER) && LIBRESSL_VERSION_NUMBER >= 0x20700000L && LIBRESSL_VERSION_NUMBER <= 0x30500000L
+ #define BIO_get_init(b) (b)->init
+ #endif
+ 
