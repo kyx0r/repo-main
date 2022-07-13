@@ -1,4 +1,4 @@
-https://git.busybox.net/busybox/snapshot/busybox-MAJOR_MINOR_PATCH.tar.bz2
+git+git://git.busybox.net/busybox
 patches/libressl.patch
 patches/CVE-2022-28391.patch patch
 patches/adduser-no-setgid.patch patch
