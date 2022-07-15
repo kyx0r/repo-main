@@ -8,7 +8,7 @@ libvpx
 libwebp
 linux-headers make
 nasm          make
-libressl
+openssl
 opus
 pkgconf make
 x264
