@@ -1,5 +1,7 @@
 #!/bin/sh -e
 
+patch -p1 < musl.patch
+
 # Remove 'util-linux' dependency.
 sed 's/libmount_dep.found()/false/' meson.build > _
 mv -f _ meson.build
