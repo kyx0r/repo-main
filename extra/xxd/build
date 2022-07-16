@@ -1,0 +1,4 @@
+#!/bin/sh -e
+
+gcc xxd.c -o xxd
+install -Dm755 xxd "$1/usr/bin/xxd"
