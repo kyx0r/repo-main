@@ -1,6 +1,5 @@
-cmake make
-glu make
+libX11
 libXi
 libXrandr
-libXxf86vm make
+libXxf86vm
 mesa
