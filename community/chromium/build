@@ -1,5 +1,8 @@
 #!/bin/sh -e
 
+export DESTDIR="$1"
+
+
 printf "NOTE: It is HIGHLY recommended to build this package with sane build flags and 'ccache' enabled!\n"
 
 # Patches relating to libc are conditionally applied to avoid breakage.
@@ -8,8 +11,6 @@ kiss list musl && {
         patch -p1 < "$patch"
     done
 }
-
-patch -p1 < std_exchange_fix.patch
 
 # Saves me from having to fork this package just for 2 patches.
 kiss list glibc && {
@@ -60,16 +61,9 @@ sed '/<vector>/a #include <algorithm>' \
     ui/ozone/public/platform_gl_egl_utility.h > _
 mv -f _ ui/ozone/public/platform_gl_egl_utility.h
 
-# Useless internal glibc header include.
-# stdint.h is already included by stuff and is enough to define intN_t types.
-sed '/<bits\/stdint-intn.h>/d' \
-    ui/ozone/platform/wayland/host/wayland_window.cc > _
-mv -f _ ui/ozone/platform/wayland/host/wayland_window.cc
-
-# compile gn early, so it can be used to generate gni stuff.
+# Compile gn early, so it can be used to generate gni stuff.
 ./tools/gn/bootstrap/bootstrap.py --skip-generate-buildfiles
 
-#    ffmpeg
 # harfbuzz-ng: syslib broken
 # icu: Breakage on updates.
 # libevent: Random freezes with javascript.
@@ -79,6 +73,7 @@ mv -f _ ui/ozone/platform/wayland/host/wayland_window.cc
 # libxslt: bundle as it's only requred by browsers
 # zlib: KISS build without 'minizip'.
 system="
+    ffmpeg
     flac
     fontconfig
     freetype
@@ -114,7 +109,7 @@ done
 ./third_party/libaddressinput/chromium/tools/update-strings.py
 
 # 'clang' builds are untested but should most likely work fine with our flags.
-case $("$CC" --version) in  *clang*)
+case $("$CC" --version) in (*clang*)
     clang=true
     ;;
 esac
@@ -124,7 +119,7 @@ kiss list pipewire && pipewire=true
 
 conf="
     angle_enable_null=true
-    angle_enable_swiftshader=false
+    angle_enable_swiftshader=true
     blink_enable_generated_code_formatting=false
     blink_symbol_level=0
     clang_use_chrome_plugins=false
@@ -152,6 +147,7 @@ conf="
     use_allocator=\"none\"
     use_allocator_shim=false
     use_atk=false
+    use_bluez=false
     use_cups=false
     use_custom_libcxx=false
     use_dbus=false
@@ -162,10 +158,8 @@ conf="
     use_lld=false
     use_pulseaudio=false
     use_sysroot=false
-    use_system_harfbuzz=true
     use_thin_lto=false
     use_vaapi=${vaapi:-false}
-    use_x11=true
     use_xkbcommon=false
     build_with_tflite_lib=false
     chrome_pgo_phase=0
@@ -175,7 +169,6 @@ conf="
     enable_mdns=false
     enable_mse_mpeg2ts_stream_parser=true
     enable_nacl=false
-    enable_nacl_nonsfi=false
     enable_one_click_signin=false
     enable_reading_list=false
     enable_remoting=false
@@ -198,7 +191,10 @@ out/Release/gn gen out/Release --args="$conf"
 #
 # -n is non-POSIX hence we "attempt".
 # shellcheck disable=2039
-ulimit -n 4096 2> /dev/null || :
+ulimit -n 4096 2>/dev/null || {
+    printf "Failed to set ulimit, build will fail!\n" >&2
+    exit 1
+}
 
 ninja -C out/Release chrome
 
