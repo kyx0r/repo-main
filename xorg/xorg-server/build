@@ -4,11 +4,12 @@ export DESTDIR="$1"
 
 patch -p1 < rootless_modesetting.patch
 
-# Building with GCC 12.1 fails because of this warning, so disable it.
-export CFLAGS="-Wno-error=array-bounds $CFLAGS"
-
 # Disable tests.
 : > test/meson.build
+
+# Make meson_options.txt muon compatible.
+sed -E "/boolean/s/'(true|false)'/\1/" meson_options.txt > _
+mv -f _ meson_options.txt
 
 meson setup \
     -Dprefix='/usr' \
