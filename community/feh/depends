@@ -1,6 +1,5 @@
 curl
 imlib2
-libexif
-libjpeg-turbo
-libXt
+libX11
 libXinerama
+libpng
