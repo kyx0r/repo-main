@@ -1,7 +1,10 @@
 #!/bin/sh -e
 
+#patch < imlibfix.patch
+
 ./configure \
-    --prefix=/usr
+    --prefix=/usr \
+    --with-imlib2-prefix=/usr
 
 make
 make DESTDIR="$1" install
