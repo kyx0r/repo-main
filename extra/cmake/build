@@ -1,7 +1,5 @@
 #!/bin/sh -e
 
-patch -p1 < cmake-no-execinfo.patch
-
 if command -v cmake >/dev/null; then
     cmake -B build \
         -DCMAKE_INSTALL_PREFIX=/usr \
@@ -10,6 +8,7 @@ if command -v cmake >/dev/null; then
         -DCMAKE_USE_SYSTEM_EXPAT=True \
         -DCMAKE_USE_SYSTEM_ZLIB=True \
         -DCMAKE_USE_SYSTEM_BZIP2=True \
+        -DBUILD_CursesDialog=OFF \
         -DBUILD_TESTING=OFF
 
     cmake --build   build
@@ -21,7 +20,9 @@ else
         --system-curl \
         --system-expat \
         --system-zlib \
-        --system-bzip2
+        --system-bzip2 \
+        --parallel="$(grep -scF 'core id' /proc/cpuinfo)" -- \
+        -DBUILD_CursesDialog=OFF
 
     make
     make install

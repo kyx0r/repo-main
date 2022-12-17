@@ -9,12 +9,17 @@ for i in 0p 1p 3p; do
     cp -Rf "posix/man$i" "$1/usr/share/man/man${i%%p}"
 done
 
-for i in 2 4 5 7; do
-    cp -Rf "man$i" "$1/usr/share/man"
+for i in man*; do
+    [ -d "$i" ] || continue
+    cp -Rf "$i" "$1/usr/share/man"
 done
 
 # Provided by mandoc.
 rm -f "$1/usr/share/man/man7/man.7"
 
 # Provided by tzdata.
-rm -f "$1/usr/share/man/man5/tzfile.5"
+rm -f \
+    "$1/usr/share/man/man5/tzfile.5" \
+    "$1/usr/share/man/man8/tzselect.8" \
+    "$1/usr/share/man/man8/zdump.8" \
+    "$1/usr/share/man/man8/zic.8"

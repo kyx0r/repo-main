@@ -1,7 +1,7 @@
 #!/bin/sh -e
 
 # Required by qt5 and possibly other software.
-export CPPFLAGS="$CPPFLAGS -DSQLITE_ENABLE_COLUMN_METADATA=1"
+export CPPFLAGS="$CPPFLAGS -DSQLITE_ENABLE_COLUMN_METADATA"
 
 ./configure \
     --prefix=/usr \

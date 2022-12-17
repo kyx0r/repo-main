@@ -5,7 +5,8 @@
     --sbindir=/usr/bin \
     --sysconfdir=/etc \
     --rundir=/run \
-    --libexecdir=/usr/lib/dhcpcd
+    --libexecdir=/usr/lib/dhcpcd \
+    --without-udev
 
 make
 make BINMODE=755 install
