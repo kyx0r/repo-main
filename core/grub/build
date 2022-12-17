@@ -25,7 +25,7 @@ CFLAGS=$(printf %s "$CFLAGS" | sed 's/-march=[^ ]*//g')
     mkdir -p .bin
     bfd_path=$(command -v ld.bfd)
     ln -s "${bfd_path:?}" .bin/ld
-    export PATH=$PWD/.bin:$PATH
+    export PATH="$PWD/.bin:$PATH"
 
     # Strip '-B<path>mold' and '--ld-path=<path>mold' from CFLAGS.
     case $CFLAGS in *mold*)
