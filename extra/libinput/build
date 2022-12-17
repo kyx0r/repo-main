@@ -2,10 +2,14 @@
 
 export DESTDIR="$1"
 
+sed "s#install_subdir('libinput', install_dir : dir_etc)#install_emptydir(dir_etc / 'libinput')#" \
+    meson.build > _
+mv -f _ meson.build
+
 # Build fails with clang due to -Werror (forced on) and
 # -Wunused-command-line-argument which is triggered by.
 # the below CFLAGS.
-export CFLAGS="-Wno-unused-command-line-argument $CFLAGS"
+export CFLAGS="$CFLAGS -Wno-unused-command-line-argument"
 
 meson setup \
     -Dprefix=/usr \
@@ -16,6 +20,7 @@ meson setup \
     -Ddocumentation=false \
     -Dtests=false \
     -Dlibwacom=false \
+    -Dpkg_config_path=/usr/lib/pkgconfig \
     output
 
 ninja -C output
