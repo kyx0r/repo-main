@@ -1,8 +1,8 @@
 diff --git a/libssh2/src/openssl.h b/libssh2/src/openssl.h
-index 15518e0a6..097c68c60 100644
+index 658b040..027c84e 100644
 --- a/libssh2/src/openssl.h
 +++ b/libssh2/src/openssl.h
-@@ -55,8 +55,9 @@
+@@ -57,8 +57,9 @@
  #include <openssl/pem.h>
  #include <openssl/rand.h>
  
@@ -15,10 +15,10 @@ index 15518e0a6..097c68c60 100644
  #endif
  
 diff --git a/ncat/ncat_ssl.c b/ncat/ncat_ssl.c
-index 7749b2964..76209bc2d 100644
+index 0c3cad5..f46d220 100644
 --- a/ncat/ncat_ssl.c
 +++ b/ncat/ncat_ssl.c
-@@ -74,7 +74,9 @@
+@@ -73,7 +73,9 @@
  #include <openssl/x509.h>
  #include <openssl/x509v3.h>
  
@@ -30,7 +30,7 @@ index 7749b2964..76209bc2d 100644
  #define FUNC_ASN1_STRING_data ASN1_STRING_get0_data
  #else
 diff --git a/nping/Crypto.cc b/nping/Crypto.cc
-index 850438352..d5e537eef 100644
+index e0f66d7..9a76eef 100644
 --- a/nping/Crypto.cc
 +++ b/nping/Crypto.cc
 @@ -70,7 +70,9 @@
@@ -42,28 +42,28 @@ index 850438352..d5e537eef 100644
 +    ((!defined LIBRESSL_VERSION_NUMBER) || \
 +    (defined LIBRESSL_VERSION_NUMBER && LIBRESSL_VERSION_NUMBER >= 0x30500000L))
  #define HAVE_OPAQUE_EVP_PKEY 1
- #define FUNC_EVP_MD_CTX_init EVP_MD_CTX_reset
- #define FUNC_EVP_MD_CTX_cleanup EVP_MD_CTX_reset
+ #else
+ #define EVP_MD_CTX_new EVP_MD_CTX_create
 diff --git a/nse_openssl.cc b/nse_openssl.cc
-index 92dea3ac8..97987ca1a 100644
+index cc94472..3351a88 100644
 --- a/nse_openssl.cc
 +++ b/nse_openssl.cc
-@@ -21,7 +21,9 @@
- #include <openssl/ripemd.h>
- #include <openssl/sha.h>
+@@ -13,7 +13,9 @@
+ #include <openssl/hmac.h>
+ #include <openssl/rand.h>
  
 -#if (OPENSSL_VERSION_NUMBER >= 0x10100000L) && !defined LIBRESSL_VERSION_NUMBER
 +#if (OPENSSL_VERSION_NUMBER >= 0x10100000L) && \
 +    ((!defined LIBRESSL_VERSION_NUMBER) || \
 +    (defined LIBRESSL_VERSION_NUMBER && LIBRESSL_VERSION_NUMBER >= 0x30500000L))
  #define HAVE_OPAQUE_STRUCTS 1
- #define FUNC_EVP_MD_CTX_init EVP_MD_CTX_reset
- #define FUNC_EVP_MD_CTX_cleanup EVP_MD_CTX_reset
+ #if OPENSSL_VERSION_NUMBER >= 0x30000000L
+ # include <openssl/provider.h>
 diff --git a/nse_ssl_cert.cc b/nse_ssl_cert.cc
-index 53f3ddaf5..f63d77b82 100644
+index e0cd65e..8b3d302 100644
 --- a/nse_ssl_cert.cc
 +++ b/nse_ssl_cert.cc
-@@ -81,7 +81,9 @@
+@@ -80,7 +80,9 @@
  #include <openssl/evp.h>
  #include <openssl/err.h>
  
