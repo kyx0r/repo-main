@@ -3,8 +3,6 @@
 # Uncomment if using valgrind or similar.
 # :>nostrip
 
-patch -p1 < fix_malloc.patch
-
 ./configure \
     --prefix=/usr \
     --syslibdir=/usr/lib \
@@ -12,7 +10,7 @@ patch -p1 < fix_malloc.patch
 #   --enable-debug
 
 make
-make install
+make DESTDIR="$1" install
 
 mkdir -p "$1/usr/bin"
 ln -s  /usr/lib/ld-musl-x86_64.so.1 "$1/usr/bin/ldd"
