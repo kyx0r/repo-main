@@ -21,6 +21,7 @@ mv -f _ src/Makefile.in
     --without-librtmp \
     --without-libpsl \
     --without-libidn2 \
+    --without-nghttp2 \
     --without-brotli \
     --without-zstd
 
