@@ -13,6 +13,7 @@ mv -f _ src/Makefile.in
     --enable-unix-sockets \
     --enable-symbol-hiding \
     --disable-manual \
+    --disable-docs \
     --disable-ldap \
     --disable-ares \
     --with-openssl \
