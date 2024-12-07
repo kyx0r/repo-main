@@ -1,0 +1,6 @@
+# Build Flags
+KBOOTSTRAP_CFLAGS="-march=x86-64 -mtune=generic -pipe -O2"
+KBOOTSTRAP_CXXFLAGS="-march=x86-64 -mtune=generic -pipe -O2"
+# Change this to point to the repos containing the packages listed in KBOOTSTRAP_PACKAGES
+KBOOTSTRAP_KISS_PATH="$PWD/core:$PWD/extra"
+KBOOTSTRAP_PACKAGES="baselayout binutils bison busybox bzip2 pigz xz zlib flex m4 make musl kiss linux-headers libressl curl git gcc"

@@ -1,0 +1,8 @@
+#!/bin/sh -e
+
+cd -P "${1:?No path provided}"
+
+[ "$PWD" = '/' ] || {
+    printf '%s\n' "$PWD is not the real root!"
+    exit 1
+}
