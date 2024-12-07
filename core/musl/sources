@@ -1,4 +1,5 @@
 https://musl.libc.org/releases/musl-1.2.5.tar.gz
+fix_malloc.patch
 files/cdefs.h
 files/queue.h
 files/tree.h

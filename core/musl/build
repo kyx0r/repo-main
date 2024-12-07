@@ -3,6 +3,8 @@
 # Uncomment if using valgrind or similar.
 # :>nostrip
 
+patch -p1 < fix_malloc.patch
+
 ./configure \
     --prefix=/usr \
     --syslibdir=/usr/lib \
