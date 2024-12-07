@@ -1,15 +1,9 @@
-https://git.busybox.net/busybox/snapshot/busybox-1.35.0.tar.bz2
-patches/libressl.patch
-patches/CVE-2022-28391.patch patch
-patches/CVE-2022-30065.patch patch
-patches/adduser-no-setgid.patch patch
-patches/fsck-resolve-uuid.patch patch
-patches/modprobe-kernel-version.patch patch
-patches/print-unicode.patch patch
-patches/install-fix-chown.patch patch
-patches/lsusb-vendor-product.patch patch
-patches/unzip-usage-no-error.patch patch
-patches/init-use-baseinit.patch patch
+https://git.busybox.net/busybox/snapshot/busybox-1_37_0.tar.bz2
+patches/fsck-resolve-uuid.patch
+patches/modprobe-kernel-version.patch
+patches/print-unicode.patch
+patches/unzip-usage-no-error.patch
+patches/init-use-baseinit.patch
 files/.config
 files/.config-suid
 files/acpid.run
