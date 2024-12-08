@@ -1,5 +1,9 @@
 #!/bin/sh -e
 
+patch -p1 < musl-btmp.patch
+
+export CFLAGS="$CFLAGS -Wno-error=incompatible-pointer-types"
+
 ./configure \
     --prefix=/usr \
     --datadir=/usr/share/openssh \
@@ -7,6 +11,7 @@
     --sbindir=/usr/bin \
     --libexecdir=/usr/lib/openssh \
     --without-selinux \
+    --without-zlib-version-check \
     --with-privsep-user=nobody \
     --with-mantype=doc \
     --without-rpath \
