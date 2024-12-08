@@ -12,7 +12,7 @@ set -eu
 : "${KBOOTSTRAP_CXXFLAGS:=-march=x86-64 -mtune=generic -pipe -Os}"
 : "${KBOOTSTRAP_MAKEFLAGS:=-j$(nproc)}"
 
-OUTFILE="${1:-$PWD/kiss-chroot-$(date +'%y.%m.%d').tar}"
+OUTFILE="${1:-$PWD/kiss-chroot-$(date +'%y-%m-%d').tar}"
 OUTFILE="$(realpath "$OUTFILE")"
 
 TMPDIR=/tmp/kroot
