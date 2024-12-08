@@ -1,28 +1,12 @@
 #!/bin/sh -e
 
-# The wpa_supplicant package is built statically using
-# libnl-tiny which is a minimal version of libnl maintained
-# by OpenWRT.
-mv libnl-tiny* libnl.tar.gz
-tar xf libnl.tar.gz
-mv libnl-tiny* libnl
-
-export CFLAGS="$CFLAGS -D_GNU_SOURCE -I$PWD/libnl/include"
-export LDFLAGS="$LDFLAGS -L$PWD/libnl"
-
-(
-    cd libnl
-
-    # CFLAGS must expand to individual arguments.
-    # shellcheck disable=2086
-    ${CC:-cc} $CFLAGS $CPPFLAGS -c ./*.c
-    ${AR:-ar} rc libnl-tiny.a ./*.o
-)
+CFLAGS="$CFLAGS $(pkg-config --cflags libnl-tiny)"
+export CFLAGS
 
 cd wpa_supplicant
 
 make LIBDIR=/usr/lib BINDIR=/usr/bin
-make LIBDIR=/usr/lib BINDIR=/usr/bin install
+make LIBDIR=/usr/lib BINDIR=/usr/bin DESTDIR="$1" install
 
 mkdir -p \
     "$1/usr/share/man/man5" \

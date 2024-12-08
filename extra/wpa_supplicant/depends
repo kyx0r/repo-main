@@ -1,2 +1,4 @@
+libnl-tiny make
 linux-headers make
 libressl
+pkgconf make
