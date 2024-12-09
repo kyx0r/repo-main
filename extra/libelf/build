@@ -2,10 +2,7 @@
 
 patch -p1 < musl.patch
 
-# Build sometimes forces -Werror.
-export CFLAGS="$CFLAGS -Wno-error"
-
-sh ./configure \
+./configure \
     --prefix=/usr \
     --disable-symbol-versioning \
     --disable-debuginfod \
@@ -13,11 +10,13 @@ sh ./configure \
     --disable-nls \
     ac_cv_c99=yes # Override check for Clang.
 
-# Skip the default make target and build only what we need.
-make -C lib
-make -C libelf
-make -C libelf install
-make -C doc    install-man3
+# Utility functions that need argp and fts, not strictly necessary
+# for the library to function
+:>libdwfl/argp-std.c
+:>libdwfl/linux-kernel-modules.c
 
-mkdir -p "$1/usr/lib/pkgconfig"
-cp -f config/libelf.pc "$1/usr/lib/pkgconfig/libelf.pc"
+# Useless stuff
+printf '%s\n' "all:" "install:" > src/Makefile
+
+make
+make DESTDIR="$1" install
