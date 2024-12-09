@@ -1,5 +1,2 @@
-libX11
-libXi
-libXrandr
-libXxf86vm
+cmake make
 mesa

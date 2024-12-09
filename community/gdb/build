@@ -8,13 +8,11 @@ EOF
 chmod +x makeinfo
 export PATH="$PATH:$PWD"
 
-mkdir _build
-cd _build
-
-../configure \
+./configure \
     --prefix=/usr \
     --without-installed-readline \
     --disable-nls
 
 make
-make DESTDIR="$1" install
+make -C gdb DESTDIR="$1" install
+make -C gdbserver DESTDIR="$1" install
