@@ -1,6 +1,7 @@
 bzip2
 expat
 libffi
+ncurses
 libressl
 sqlite
 zlib
