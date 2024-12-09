@@ -3,12 +3,14 @@
 export LDFLAGS="$LDFLAGS -static"
 
 ./configure \
+    CPPFLAGS="$CPPFLAGS -DHAVE_LSEEK64" \
     --prefix=/usr \
     --sbindir=/usr/bin \
     --sysconfdir=/etc \
     --enable-symlink-install \
     --enable-libuuid \
     --enable-libblkid \
+    --disable-fuse2fs \
     --disable-nls \
     --disable-uuidd \
     --disable-fsck \
@@ -17,6 +19,7 @@ export LDFLAGS="$LDFLAGS -static"
 make
 
 set -- \
+    DESTDIR="$1" \
     MKDIR_P="mkdir -p" \
     BLKID_MAN="" \
     BLKID_PROG="" \

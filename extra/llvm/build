@@ -1,7 +1,10 @@
 #!/bin/sh -e
 
-mv Modules/* cmake/modules/
+export DESTDIR="$1"
 
+patch -p1 < musl-stack-size.patch
+
+cd llvm
 cmake -B build \
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DCMAKE_BUILD_TYPE=Release \
