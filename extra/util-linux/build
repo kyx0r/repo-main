@@ -1,5 +1,7 @@
 #!/bin/sh -e
 
+patch -p1 < posix.patch
+
 ./configure \
     --prefix=/usr \
     --localstatedir=/var \
@@ -11,6 +13,7 @@
     --enable-fsck \
     --enable-chfn-chsh \
     --disable-chfn-chsh-password \
+    --disable-liblastlog2 \
     --disable-makeinstall-chown \
     --disable-rpath \
     --without-udev \
@@ -18,7 +21,7 @@
     --without-systemd
 
 make
-make install
+make DESTDIR="$1" install
 
 # Fix broken --sbindir.
 mv -f "$1/usr/sbin/"* "$1/usr/bin"
