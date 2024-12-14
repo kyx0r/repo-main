@@ -18,6 +18,8 @@ done
 export CFLAGS
 CFLAGS=$(printf %s "$CFLAGS" | sed 's/-march=[^ ]*//g')
 
+pkg_dir=$1
+
 # Force bfd linker to fix issues with alternative linkers. Mold does not yet
 # have full linker script support and I'm not certain that lld or gold have
 # ever worked to build Grub.
@@ -36,6 +38,11 @@ CFLAGS=$(printf %s "$CFLAGS" | sed 's/-march=[^ ]*//g')
 build_grub() (
     cd "grub-${1##*=}"
 
+    patch -p1 < ../no-asorti.patch
+
+    # This file is missing from the release tarball.
+    touch grub-core/extra_deps.lst
+
     ./configure \
         HELP2MAN="$OLDPWD/help2man" \
         --prefix=/usr \
@@ -48,7 +55,7 @@ build_grub() (
         "$@"
 
     make
-    make install
+    make DESTDIR="$pkg_dir" install
 )
 
 build_grub --with-platform=pc
