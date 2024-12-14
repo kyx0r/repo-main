@@ -8,6 +8,8 @@ export CC="${CC:-cc}"
 export CCC="${CXX:-c++}"
 export CXX="${CXX:-c++}"
 
+patch -p1 < fixbuild.patch
+
 make -j1 -C nss nss_build_all
 
 # TODO: Maybe install the NSS binaries. They're uneeded
@@ -39,8 +41,8 @@ sed nss/pkg/pkg-config/nss.pc.in \
     -e "s,%prefix%,/usr,g" \
     -e "s,%exec_prefix%,/usr/bin,g" \
     -e "s,%includedir%,/usr/include/nss,g" \
-    -e "s,%NSPR_VERSION%,4.32,g" \
-    -e "s,%NSS_VERSION%,3.70,g" |
+    -e "s,%NSPR_VERSION%,4.35,g" \
+    -e "s,%NSS_VERSION%,3.99,g" |
 install -Dm644 /dev/stdin "$1/usr/lib/pkgconfig/nss.pc"
 
 # This is disgusting and I hate this package with a passion.
