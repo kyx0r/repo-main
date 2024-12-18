@@ -1,0 +1,10 @@
+#!/bin/sh -e
+
+./configure \
+    --prefix=/usr \
+    --enable-shared \
+    --disable-rpath \
+    --with-openssl-dir=/usr
+
+make
+make DESTDIR="$1" install
