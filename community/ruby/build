@@ -4,6 +4,7 @@
     --prefix=/usr \
     --enable-shared \
     --disable-rpath \
+    --with-rdoc=ri \
     --with-openssl-dir=/usr
 
 make
