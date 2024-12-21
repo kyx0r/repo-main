@@ -1,0 +1,18 @@
+#!/bin/sh -e
+
+export DESTDIR="$1"
+
+pkg-config --exists gobject-introspection-1.0 && gi=en
+
+meson setup \
+    -Dprefix=/usr \
+    -Dgl=enabled \
+    -Dtests=disabled \
+    -Dtremor=disabled \
+    -Dexamples=disabled \
+    -Dcdparanoia=disabled \
+    -Dintrospection="${gi:-dis}abled" \
+    output
+
+ninja -C output
+ninja -C output install

@@ -1,0 +1,10 @@
+#!/bin/sh -e
+
+./configure \
+  --prefix=/usr \
+  --enable-shared \
+  --with-audio=alsa \
+  --with-vox=cmu_us_kal16
+
+make -j1
+make DESTDIR="$1" install

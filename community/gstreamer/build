@@ -1,0 +1,21 @@
+#!/bin/sh -e
+
+export DESTDIR="$1"
+
+pkg-config --exists gobject-introspection-1.0 && gi=en
+
+: > tests/meson.build
+
+meson setup \
+    -Dprefix=/usr \
+    -Dlibexecdir=/usr/lib \
+    -Dbuildtype=release \
+    -Ddbghelp=disabled \
+    -Dintrospection="${gi:-dis}abled" \
+    -Dexamples=disabled \
+    output
+
+ninja -C output
+ninja -C output install
+
+ln -sf /usr/include/gstreamer-1.0/gst/ /usr/include/gst
