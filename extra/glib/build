@@ -2,8 +2,10 @@
 
 : > fuzzing/meson.build
 
-meson \
-    --prefix=/usr \
+export DESTDIR="$1"
+
+meson setup \
+    -Dprefix=/usr \
     -Dlibmount=disabled \
     -Dinstalled_tests=false \
     -Ddefault_library=both \
@@ -11,7 +13,7 @@ meson \
     -Dtests=false \
     -Dlibelf=disabled \
     -Dnls=disabled \
-    . build
+    build
 
 ninja -C build
 ninja -C build install
