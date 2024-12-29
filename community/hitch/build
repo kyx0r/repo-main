@@ -2,7 +2,16 @@
 
 patch -p1 < priv-libressl.patch
 
-./bootstrap --disable-documentation --prefix=/usr
+mkdir -p ./build-aux
+autoreconf -i
+
+./configure \
+        --enable-silent-rules \
+        --disable-documentation \
+        --disable-warnings \
+        --with-lex \
+        --with-yacc
+
 cd src
 make
 make DESTDIR="$1" install
