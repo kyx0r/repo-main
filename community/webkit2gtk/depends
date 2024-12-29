@@ -19,4 +19,7 @@ sqlite
 flite
 gstreamer
 gst-plugins-base
+gst-plugins-good
+gst-plugins-bad
+gst-libav
 unifdef-git make
