@@ -1,5 +1,7 @@
 #!/bin/sh -e
 
+patch -p1 < libressl.patch
+
 ./configure \
     --prefix=/usr \
     --sbindir=/usr/bin \
