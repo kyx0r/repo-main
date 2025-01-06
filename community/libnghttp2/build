@@ -1,0 +1,13 @@
+#!/bin/sh -e
+
+./configure \
+    --prefix=/usr \
+    --disable-examples \
+    --disable-python-bindings \
+    --enable-lib-only
+
+make
+make DESTDIR="$1" install
+
+# Compress manpages
+find "$1/usr/share/man" -type f -exec gzip -n -9 {} +
