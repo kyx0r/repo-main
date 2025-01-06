@@ -1,25 +1,27 @@
 atk
 cairo
-cmake  make
-glib-networking
-gperf  make
-gtk+3
+cmake            make
 harfbuzz-icu
+glib-networking
+gperf            make
+gtk+3
 libXt
 libgcrypt
-libsoup
+libsoup3
 libtasn1
 libwebp
 libxslt
 mesa
-perl   make
-python make
-ruby   make
+perl             make
+python           make
+python-packaging make
+ruby             make
 sqlite
 flite
 gstreamer
 gst-plugins-base
 gst-plugins-good
 gst-plugins-bad
+gst-plugins-ugly
 gst-libav
 unifdef-git make
