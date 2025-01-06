@@ -1,0 +1,36 @@
+#!/bin/sh -e
+
+export DESTDIR="$1"
+
+# Remove subprojects folder to avoid cloning them via git.
+rm -rf subprojects/
+
+# Disable nls.
+sed "/subdir('po')/d" meson.build > _
+mv -f _ meson.build
+
+# Needed to make the build succeed.
+export CFLAGS="$CFLAGS -w"
+export CXXFLAGS="$CXXFLAGS -w"
+
+meson setup \
+	-Dprefix=/usr \
+	-Dsysconfdir=/etc \
+	-Dlocalstatedir=/var \
+	-Dbuildtype=release \
+	-Db_colorout=never \
+	-Ddebug=false \
+	-Doptimization=s \
+	-Dtests=false \
+	-Ddocs=disabled \
+	-Dtls_check=false \
+	-Dvapi=disabled \
+	-Dgssapi=disabled \
+	-Dbrotli=disabled \
+	-Dsysprof=disabled \
+	-Dpkcs11_tests=disabled \
+	-Dintrospection=disabled \
+	build
+
+samu -C build
+samu -C build install
