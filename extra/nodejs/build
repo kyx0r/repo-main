@@ -10,7 +10,8 @@ esac
 
 ./configure \
     --shared-zlib \
-    --with-intl=none \
+    --shared-openssl \
+    --with-intl=small-icu \
     --without-report \
     --without-node-snapshot \
     --without-node-code-cache \
