@@ -26,7 +26,7 @@ meson setup \
     -Dzstd=disabled \
     -Dglvnd="${glvnd_enabled:-true}" \
     -Dvideo-codecs=vc1dec,h264dec,h264enc,h265dec,h265enc \
-    -Dvulkan-drivers='' \
+    -Dvulkan-drivers='amd' \
     output
 
 ninja -C output
