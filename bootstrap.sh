@@ -102,6 +102,9 @@ set +e
 	echo "Ctrl + C to cancel tarball"
 	read -r _
 	tar cf "$OUTFILE" . -C "$TMPDIR/$STAGE"
+	echo "Ctrl + C to cancel tarball compression"
+	read -r _
+	xz -z -c -9 "$OUTFILE" > "${OUTFILE}.xz"
 )
 
 ret="$?"
