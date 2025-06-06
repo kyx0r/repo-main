@@ -1,7 +1,6 @@
 #!/bin/sh -e
 
-patch -p1 < libtheora-1.1.1-libpng16.patch
-patch -p1 < fix-theoraenc.patch
+export CFLAGS="$CFLAGS -std=gnu17"
 
 ./configure \
     --prefix=/usr
