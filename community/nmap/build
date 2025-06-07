@@ -4,6 +4,7 @@ patch -p1 < libresslfix.patch
 
 ./configure \
     --prefix=/usr \
+    --without-ndiff \
     --without-zenmap
 
 make
