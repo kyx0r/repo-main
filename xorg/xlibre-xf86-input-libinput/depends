@@ -1,0 +1,4 @@
+libinput
+linux-headers make
+pkgconf       make
+xlibre-server
