@@ -7,11 +7,11 @@ chmod g+s    "$KISS_ROOT/usr/bin/Xorg"
 cat <<EOF
 
 NOTE: You are likely going to want to install
-      the xf86-input-libinput package for libinput 
+      the xlibre-xf86-input-libinput package for libinput 
       to work.
 
--> KISS_PROMPT=0 kiss build   xf86-input-libinput
--> KISS_PROMPT=0 kiss install xf86-input-libinput
+-> KISS_PROMPT=0 kiss build   xlibre-xf86-input-libinput
+-> KISS_PROMPT=0 kiss install xlibre-xf86-input-libinput
 
 NOTE: You must be a part of the [1mvideo[m group
       for rootless xorg-server to work.
