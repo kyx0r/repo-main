@@ -1,3 +1,5 @@
 curl
 libtorrent
+libressl
+zlib
 ncurses
