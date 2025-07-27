@@ -1,7 +1,4 @@
 #!/bin/sh -e
 
 make
-make \
-    PREFIX="$1/usr" \
-    MANDIR="$1/usr/share/man" \
-    install
+install -Dm755 tree "$1/usr/bin/tree"
