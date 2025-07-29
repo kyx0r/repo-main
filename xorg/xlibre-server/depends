@@ -1,7 +1,6 @@
 freetype-harfbuzz
 xcb-util
 xcb-util-wm
-libXdmcp
 libX11
 libXau
 libXdamage
