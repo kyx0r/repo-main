@@ -1,2 +1,5 @@
+gmp
 libffi
+libressl
 libyaml
+zlib
