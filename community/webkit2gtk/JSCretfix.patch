@@ -1,0 +1,26 @@
+diff --git a/Source/WebKit/UIProcess/API/glib/WebKitJavascriptResult.cpp_ b/Source/WebKit/UIProcess/API/glib/WebKitJavascriptResult.cpp
+index cc724bb..42bc170 100644
+--- a/Source/WebKit/UIProcess/API/glib/WebKitJavascriptResult.cpp_
++++ b/Source/WebKit/UIProcess/API/glib/WebKitJavascriptResult.cpp
+@@ -19,6 +19,7 @@
+ 
+ #include "config.h"
+ #include "WebKitJavascriptResult.h"
++#include "JavaScriptEvaluationResult.h"
+ 
+ #if !ENABLE(2022_GLIB_API)
+ 
+@@ -46,10 +47,11 @@ struct _WebKitJavascriptResult {
+ 
+ G_DEFINE_BOXED_TYPE(WebKitJavascriptResult, webkit_javascript_result, webkit_javascript_result_ref, webkit_javascript_result_unref)
+ 
+-WebKitJavascriptResult* webkitJavascriptResultCreate(WebCore::SerializedScriptValue& serializedScriptValue)
++WebKitJavascriptResult* webkitJavascriptResultCreate(WebKit::JavaScriptEvaluationResult&& val)
+ {
+     WebKitJavascriptResult* result = static_cast<WebKitJavascriptResult*>(fastMalloc(sizeof(WebKitJavascriptResult)));
+-    new (result) WebKitJavascriptResult(serializedScriptValue);
++    result->jsValue = val.toJSC();
++    //new (result) WebKitJavascriptResult(val);
+     return result;
+ }
+ 
