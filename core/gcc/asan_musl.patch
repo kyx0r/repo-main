@@ -1,0 +1,27 @@
+diff --git a/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.h_ b/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.h
+index cfac490..599f5f4 100644
+--- a/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.h_
++++ b/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.h
+@@ -1065,7 +1065,9 @@ extern unsigned struct_serial_struct_sz;
+ extern unsigned struct_sockaddr_ax25_sz;
+ extern unsigned struct_unimapdesc_sz;
+ extern unsigned struct_unimapinit_sz;
++#if SANITIZER_GLIBC
+ extern unsigned struct_sock_fprog_sz;
++# endif
+ #  endif  // SANITIZER_LINUX && !SANITIZER_ANDROID
+ 
+ extern const unsigned long __sanitizer_bufsiz;
+diff --git a/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc_ b/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc
+index f2a9348..df6b8ea 100644
+--- a/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc_
++++ b/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc
+@@ -1313,7 +1313,7 @@ INTERCEPTOR(int, prctl, int option, unsigned long arg2, unsigned long arg3,
+     COMMON_INTERCEPTOR_WRITE_RANGE(ctx, (u64 *)(arg5), sizeof(u64));
+   } else if (res != -1 && option == PR_GET_PDEATHSIG) {
+     COMMON_INTERCEPTOR_WRITE_RANGE(ctx, (u64 *)(arg2), sizeof(int));
+-#  if !SANITIZER_ANDROID
++#  if !SANITIZER_ANDROID && SANITIZER_GLIBC
+   } else if (res != -1 && option == PR_SET_SECCOMP &&
+              arg2 == SECCOMP_MODE_FILTER) {
+     COMMON_INTERCEPTOR_WRITE_RANGE(ctx, (u64 *)(arg3), struct_sock_fprog_sz);
