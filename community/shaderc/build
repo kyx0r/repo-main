@@ -1,0 +1,28 @@
+#!/bin/sh -e
+
+export DESTDIR="$1"
+
+# Disable third party dependencies
+sed -i -e '/add_subdirectory(third_party)/d' CMakeLists.txt
+
+# Fix glslc test generation depending on third-party SPIRV-tools
+sed -i -e "s|\$<TARGET_FILE:spirv-dis>|spirv-dis|" \
+	glslc/test/CMakeLists.txt
+
+# Disable git versioning
+sed -i -e '/build-version/d' glslc/CMakeLists.txt
+
+echo "\"2025.1\"" > glslc/src/build-version.inc
+
+cmake -B build -G Ninja \
+	-DCMAKE_INSTALL_PREFIX=/usr \
+	-DCMAKE_INSTALL_LIBDIR=lib \
+	-DCMAKE_BUILD_TYPE=MinSizeRel \
+	-DBUILD_SHARED_LIBS=ON \
+	-DSHADERC_SKIP_TESTS=ON \
+	-DSHADERC_ENABLE_TESTS=OFF \
+	-DSHADERC_ENABLE_EXAMPLES=OFF \
+	-Dglslang_SOURCE_DIR=/usr/include/glslang \
+
+cmake --build build
+cmake --install build
