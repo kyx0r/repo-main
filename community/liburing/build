@@ -1,0 +1,15 @@
+#!/bin/sh -e
+
+# Disable tests and examples
+echo "all:" > examples/Makefile
+echo "all:" > test/Makefile
+
+sed 's/realpath -s/realpath/' configure > _
+mv -f _ configure
+chmod +x configure
+
+./configure \
+    --prefix=/usr
+
+make
+make DESTDIR="$1" install

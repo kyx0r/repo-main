@@ -1,0 +1,10 @@
+#!/bin/sh -e
+
+./configure \
+    --disable-video-opengl \
+    --enable-video-opengles \
+    --disable-rpath \
+    --prefix=/usr
+
+make
+make DESTDIR="$1" install
