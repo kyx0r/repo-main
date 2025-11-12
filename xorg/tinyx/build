@@ -1,5 +1,9 @@
 #!/bin/sh -e
 
+export CFLAGS="$CFLAGS -Wno-implicit-int -Wno-old-style-definition"
+
+patch -p1 < fix.patch
+
 ./configure \
     --prefix=/usr \
     --with-fontdir=/usr/share/fonts \
