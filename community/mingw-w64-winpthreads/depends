@@ -1,0 +1,4 @@
+mingw-w64-binutils
+mingw-w64-crt
+mingw-w64-gcc-base make
+mingw-w64-headers

@@ -1,0 +1,26 @@
+#!/bin/sh -e
+
+export CFLAGS="-Ofast -pipe -march=native"
+export CXXFLAGS="$CFLAGS"
+
+patch -p1 < rpath.patch
+
+autoreconf -f
+tools/make_requests
+
+./configure \
+	--prefix=/usr \
+	--libdir=/usr/lib \
+	--without-wayland \
+	--with-x \
+	--with-vulkan \
+	--with-ffmpeg \
+	--without-gstreamer \
+	--with-gnutls \
+	--without-dbus \
+	--enable-win64 \
+	--enable-archs=x86_64,i386 \
+	--disable-tests
+
+make
+make DESTDIR="$1" install

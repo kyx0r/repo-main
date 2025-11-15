@@ -1,0 +1,20 @@
+#!/bin/sh -ex
+
+cd mingw-w64-libraries/winpthreads
+
+for target in i686-w64-mingw32 x86_64-w64-mingw32; do
+	(
+	mkdir $target
+	cd $target
+
+	../configure \
+		--prefix=/usr/$target \
+		--host=$target \
+		--enable-static \
+		--enable-shared \
+		CC=$target-gcc
+	
+	make
+	make DESTDIR="$1" install
+	)
+done

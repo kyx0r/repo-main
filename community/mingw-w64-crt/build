@@ -1,0 +1,28 @@
+#!/bin/sh -ex
+# shellcheck disable=2086
+
+cd mingw-w64-crt
+
+for target in i686-w64-mingw32 x86_64-w64-mingw32; do
+	(
+	mkdir $target
+	cd $target
+
+	if ! [ ${target##x86_64} = $target ]; then
+		conf="--enable-lib64 --disable-lib32"
+	else
+		conf="--enable-lib32 --disable-lib64"
+	fi
+
+	../configure \
+		--prefix=/usr/$target \
+		--host=$target \
+		--target=$target \
+		--enable-wildcard \
+		$conf \
+		CC=$target-gcc
+	
+	make
+	make DESTDIR="$1" install
+	)
+done

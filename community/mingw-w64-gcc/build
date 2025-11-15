@@ -1,0 +1,45 @@
+#!/bin/sh -e
+
+patch -p1 < 0020-libgomp-Don-t-hard-code-MS-printf-attributes.patch
+
+kiss l mingw-w64-gcc-base && {
+	echo "mingw-w64-gcc-base is only used for bootstrapping crt and winpthreads" >&2
+	exit 1
+}
+
+for target in i686-w64-mingw32 x86_64-w64-mingw32; do
+	(
+	mkdir $target
+	cd $target
+
+	../configure \
+		libat_cv_have_ifunc=no \
+		--prefix=/usr \
+		--libexecdir=/usr/lib \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info \
+		--target=$target \
+		--disable-nls \
+		--disable-sjlj-exceptions \
+		--disable-werror \
+		--disable-multilib \
+		--disable-dw2-exceptions \
+		--disable-ns \
+		--enable-checking=release \
+		--enable-static \
+		--enable-languages=c,c++ \
+		--enable-libgomp \
+		--enable-threads=posix \
+		--enable-shared \
+		--enable-libstdcxx-time=yes \
+		--enable-languages=c,lto \
+		--with-zstd=no \
+		--with-system-zlib
+
+	make
+	make DESTDIR="$1" install
+	)
+done
+
+# shellcheck disable=2115
+rm -rf "$1/usr/share" "$1"/usr/lib/libcc1.*

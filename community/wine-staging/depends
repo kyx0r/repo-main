@@ -1,0 +1,10 @@
+alsa-lib
+autoconf make
+bash make
+gnutls
+libudev-zero
+libusb
+libxml2
+mingw-w64-gcc make
+python make
+vulkan-loader

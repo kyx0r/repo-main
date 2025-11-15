@@ -1,0 +1,18 @@
+#!/bin/sh -e
+
+cd mingw-w64-headers
+
+for target in i686-w64-mingw32 x86_64-w64-mingw32; do
+	(
+	mkdir $target
+	cd $target
+
+	../configure \
+		--prefix=/usr/$target \
+		--enable-sdk=all \
+		--host=$target
+	
+	make
+	make DESTDIR="$1" install
+	)
+done

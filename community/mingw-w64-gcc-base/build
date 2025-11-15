@@ -1,0 +1,31 @@
+#!/bin/sh -e
+
+for target in i686-w64-mingw32 x86_64-w64-mingw32; do
+	(
+	mkdir $target
+	cd $target
+
+	../configure \
+		libat_cv_have_ifunc=no \
+		--prefix=/usr \
+		--program-prefix=$target- \
+		--target=$target \
+		--libexecdir=/usr/lib \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info \
+		--disable-multilib \
+		--disable-dw2-exceptions \
+		--disable-ns \
+		--enable-checking=release \
+		--enable-static \
+		--enable-languages=c \
+		--with-zstd=no \
+		--with-system-zlib
+
+	make all-gcc
+	make DESTDIR="$1" install-gcc
+	)
+done
+
+# shellcheck disable=2115
+rm -rf "$1/usr/share" "$1"/usr/lib/libcc1.*

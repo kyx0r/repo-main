@@ -1,0 +1,41 @@
+#!/bin/sh -e
+
+cat > makeinfo <<EOF
+#!/bin/sh
+printf 'makeinfo (GNU texinfo) 5.2\n'
+EOF
+
+chmod +x makeinfo
+export PATH="$PATH:$PWD"
+
+for target in i686-w64-mingw32 x86_64-w64-mingw32; do
+	(
+	mkdir $target
+	cd $target
+
+	../configure \
+		--prefix=/usr \
+		--target=$target \
+		--enable-deterministic-archives \
+		--enable-gold \
+		--enable-lto \
+		--enable-ld=default \
+		--enable-plugins \
+		--disable-multilib \
+		--disable-werror \
+		--disable-gdb \
+		--disable-nls \
+		--disable-readline \
+		--disable-gprof \
+		--disable-gprofng \
+		--with-mmap \
+		--with-system-zlib \
+		--without-zstd
+	
+	make
+	make DESTDIR="$1" install
+	)
+done
+
+# shellcheck disable=2115
+rm -rf "$1/usr/lib" "$1/usr/share"

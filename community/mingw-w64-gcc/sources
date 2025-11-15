@@ -1,0 +1,2 @@
+https://gcc.gnu.org/pub/gcc/releases/gcc-14.2.0/gcc-14.2.0.tar.xz
+patches/0020-libgomp-Don-t-hard-code-MS-printf-attributes.patch
