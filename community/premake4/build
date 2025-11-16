@@ -1,0 +1,8 @@
+#!/bin/sh -e
+
+unzip ./*.zip
+cd premake*
+cd build/gmake.unix
+make
+mkdir -p "$1/usr/bin"
+cp ../../bin/release/premake4 "$1/usr/bin/premake4"
