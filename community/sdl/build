@@ -1,5 +1,9 @@
 #!/bin/sh -e
 
+patch -p1 < gcc15.patch
+
+export CFLAGS="$CFLAGS -Wno-incompatible-pointer-types -Wno-old-style-definition"
+
 # Fixes bug that prevents SDL from building with X11 support
 sed -e '/_XData32/s:register long:register _Xconst long:' \
     src/video/x11/SDL_x11sym.h > _
