@@ -1,5 +1,9 @@
 #!/bin/sh -e
 
+cd edge
+
+./autogen.sh
+
 ./configure \
     --sbindir=/usr/bin \
     --prefix=/usr
