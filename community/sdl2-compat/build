@@ -1,0 +1,15 @@
+#!/bin/sh -e
+
+export DESTDIR="$1"
+
+sed "/SDL_VIDEO_DRIVER_X11/ s/1/0/" include/SDL2/SDL_config_unix.h > _
+mv -f _ include/SDL2/SDL_config_unix.h
+
+cmake -B build \
+	-DCMAKE_BUILD_TYPE=Release \
+	-DCMAKE_INSTALL_PREFIX=/usr \
+	-DCMAKE_INSTALL_LIBDIR=lib \
+	-DSDL2COMPAT_TESTS=OFF
+
+cmake --build   build
+cmake --install build
