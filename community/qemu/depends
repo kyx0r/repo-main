@@ -21,3 +21,4 @@ sdl2
 virglrenderer
 zlib
 zstd
+libelf
