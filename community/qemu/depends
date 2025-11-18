@@ -17,7 +17,7 @@ pixman
 pkgconf make
 python  make
 samurai make
-sdl2
+sdl2-compat
 virglrenderer
 zlib
 zstd
