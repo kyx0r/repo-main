@@ -1,0 +1,7 @@
+#!/bin/sh -e
+
+sed -i -e "2cDESTDIR = $1" GNUmakefile
+mkdir -p "$1/usr/bin"
+ln -sf "$HOME/fiqhackdir/fiqhack" "$1/usr/bin"
+make
+make install
