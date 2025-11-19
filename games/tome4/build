@@ -1,0 +1,23 @@
+#!/bin/sh -e
+
+patch -p1 < fix.patch
+
+export CFLAGS="-Wno-incompatible-pointer-types"
+premake5 gmake --cc=gcc --os=linux
+make -j1
+
+
+mkdir -p "$1/games/tome4"
+mkdir -p "$1/usr/bin"
+
+cp "./t-engine" "$1/games/tome4"
+
+cat <<\EOF > "$1/usr/bin/t-engine"
+#!/bin/sh
+sh -c "cd /games/tome4 && ./t-engine"
+EOF
+chmod +x "$1/usr/bin/t-engine"
+
+# Install the game data.
+cp -r "./bootstrap" "$1/games/tome4"
+cp -r "./game" "$1/games/tome4"

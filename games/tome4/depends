@@ -1,0 +1,9 @@
+glu
+libglvnd
+libpng
+libvorbis
+premake5 make
+sdl2-compat
+sdl2_image
+sdl2_ttf
+sdl3
