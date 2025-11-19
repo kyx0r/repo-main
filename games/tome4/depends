@@ -2,6 +2,7 @@ glu
 libglvnd
 libpng
 libvorbis
+openal-soft
 premake5 make
 sdl2-compat
 sdl2_image
