@@ -3,4 +3,4 @@
 export DESTDIR="$1"
 
 make
-make install
+make libdir_relative=lib prefix=/usr install
