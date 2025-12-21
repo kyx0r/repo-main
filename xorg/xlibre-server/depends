@@ -8,6 +8,7 @@ libXext
 libXfixes
 libXfont2
 libXxf86vm
+libXdmcp
 libdrm
 libepoxy
 libfontenc

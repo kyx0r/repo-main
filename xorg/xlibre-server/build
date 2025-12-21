@@ -2,9 +2,6 @@
 
 export DESTDIR="$1"
 
-patch -p1 < rootless_modesetting.patch
-patch -p1 < noxdmcp.patch
-
 # Disable tests.
 : > test/meson.build
 
@@ -24,7 +21,7 @@ meson setup \
     -Dglamor=true \
     -Dxorg=true \
     -Dxephyr=false \
-    -Dxdmcp=false \
+    -Dxdmcp=true \
     -Ddefault_font_path=/usr/share/fonts \
     output
 
