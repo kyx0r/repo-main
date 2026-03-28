@@ -1,10 +1,13 @@
 alsa-lib
 bash make
+bison make
 bzip2
 curl
+flex make
 glib
 libepoxy
 libpng
+libslirp
 libudev-zero
 liburing
 libusb
@@ -21,4 +24,3 @@ sdl2-compat
 virglrenderer
 zlib
 zstd
-libelf
