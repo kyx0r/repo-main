@@ -1,6 +1,4 @@
 freetype-harfbuzz
-xcb-util
-xcb-util-wm
 libX11
 libXau
 libXdamage
@@ -8,7 +6,6 @@ libXext
 libXfixes
 libXfont2
 libXxf86vm
-libXdmcp
 libdrm
 libepoxy
 libfontenc
@@ -23,5 +20,8 @@ mesa
 meson make
 pixman
 pkgconf make
+samurai make
+xcb-util
+xcb-util-wm
 xkeyboard-config
 xtrans make
