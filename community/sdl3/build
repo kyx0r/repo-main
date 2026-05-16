@@ -8,6 +8,7 @@ mv _ src/video/SDL_egl.c
 cmake -B build \
 	-DCMAKE_BUILD_TYPE=Release \
 	-DCMAKE_INSTALL_PREFIX=/usr \
+	-DSDL_X11_XSCRNSAVER=OFF \
 	-DCMAKE_INSTALL_LIBDIR=lib
 
 cmake --build   build
