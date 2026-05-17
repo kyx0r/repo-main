@@ -17,7 +17,6 @@ python           make
 python-packaging make
 ruby             make
 sqlite
-flite
 gstreamer
 gst-plugins-base
 gst-plugins-good

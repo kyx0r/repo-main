@@ -14,9 +14,6 @@ if command -v clang; then
 	export CXX=clang++
 fi
 
-patch -p1 < noexecinfo.patch
-patch -p1 < JSCretfix.patch
-
 # fix unsupported -n or -h flag for sbase ln
 sed 's/ln -sfh/ln -sf/g' Source/WebCore/Scripts/generate-derived-sources.sh > _
 mv -f _ Source/WebCore/Scripts/generate-derived-sources.sh
@@ -43,10 +40,6 @@ sed '/if.*GETTEXT_FOUND/,/^endif/d' Source/WebCore/platform/gtk/po/CMakeLists.tx
 mv -f _ Source/WebCore/platform/gtk/po/CMakeLists.txt
 sed '/^GETTEXT_C/d' Source/WebCore/platform/gtk/po/CMakeLists.txt > _
 mv -f _ Source/WebCore/platform/gtk/po/CMakeLists.txt
-
-# Fix clang build.
-sed -e '/LC_ALL/d' -e '/WTFLogAlways/d' Source/JavaScriptCore/jsc.cpp > _
-mv -f _ Source/JavaScriptCore/jsc.cpp
 
 # Webkit's CMake configuration forces color output using clang-specific flags
 # when using Ninja as the CMAKE_GENERATOR. We should disable them.
@@ -79,6 +72,8 @@ cmake -G Ninja -B build \
     -DENABLE_SAMPLING_PROFILER=OFF \
     -DENABLE_SPELLCHECK=OFF \
     -DENABLE_WAYLAND_TARGET=OFF \
+    -DENABLE_SPEECH_SYNTHESIS=OFF \
+    -DUSE_FLITE=OFF \
     -DUSE_AVIF=OFF \
     -DUSE_GSTREAMER_GL=ON \
     -DUSE_GTK4=OFF \
@@ -87,9 +82,9 @@ cmake -G Ninja -B build \
     -DUSE_LIBBACKTRACE=OFF \
     -DUSE_LIBHYPHEN=OFF \
     -DUSE_LIBSECRET=OFF \
-    -DUSE_SOUP2=OFF \
     -DUSE_WOFF2=OFF \
     -DUSE_SKIA=OFF \
+    -DUSE_SKIA_OPENTYPE_SVG=OFF \
     -DUSE_SYSTEM_SYSPROF_CAPTURE=NO \
     -Wno-dev
 
