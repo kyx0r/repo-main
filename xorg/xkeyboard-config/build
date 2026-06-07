@@ -13,7 +13,7 @@ mv -f _ meson.build
 
 meson setup \
     -Dprefix=/usr \
-    -Dmandir=usr/share/man \
+    -Dmandir=share/man \
     -Dcompat-rules=true \
     -Ddatadir=share \
     output
