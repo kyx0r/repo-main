@@ -15,7 +15,7 @@ meson setup \
     -Dprefix=/usr \
     -Dmandir=usr/share/man \
     -Dcompat-rules=true \
-    -Ddatadir=share/X11/xkb \
+    -Ddatadir=share \
     output
 
 ninja -C output
