@@ -7,15 +7,15 @@ export DESTDIR="$1"
 sed 's/xml2lst\.pl/xml2lst/' rules/meson.build > _
 mv -f _ rules/meson.build
 
-# Remove po/ dir, and usless i18n module.
+# Remove po/ dir, and useless i18n module.
 sed -e "/subdir('po')/d" -e "/i18n/d" meson.build > _
 mv -f _ meson.build
 
 meson setup \
     -Dprefix=/usr \
+    -Dmandir=usr/share/man \
     -Dcompat-rules=true \
-    -Dxorg-rules-symlinks=true \
-    -Dxkb-base="/usr/share/X11/xkb" \
+    -Ddatadir=share/X11/xkb \
     output
 
 ninja -C output
