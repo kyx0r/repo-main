@@ -2,6 +2,8 @@
 
 export DESTDIR="$1"
 
+patch -p1 < fix.patch
+
 # Disable tests.
 : > test/meson.build
 
