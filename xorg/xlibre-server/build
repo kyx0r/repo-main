@@ -2,9 +2,6 @@
 
 export DESTDIR="$1"
 
-git fetch
-git checkout release/25.1
-
 # Disable tests.
 : > test/meson.build
 
