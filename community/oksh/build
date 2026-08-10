@@ -1,0 +1,12 @@
+#!/bin/sh -e
+
+sed 's/-lncurses/-lncurses -ltinfow/g' configure > _
+mv -f _ configure
+
+sh ./configure \
+    --prefix=/usr \
+    --enable-ksh \
+    --enable-static
+
+make
+make DESTDIR="$1" install
