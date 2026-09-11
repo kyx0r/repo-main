@@ -1,5 +1,7 @@
 #!/bin/sh -e
 
+patch -p1 < vulkan-cache-physical-devices.patch
+
 export DESTDIR="$1"
 
 cmake -B build \
