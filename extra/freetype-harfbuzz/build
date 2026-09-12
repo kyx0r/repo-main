@@ -43,6 +43,7 @@ build_harfbuzz() (
 export CPPFLAGS="$CPPFLAGS -I$DESTDIR/usr/include/harfbuzz"
 export LDFLAGS="$LDFLAGS -L$DESTDIR/usr/lib"
 export PKG_CONFIG_PATH="$DESTDIR/usr/lib/pkgconfig"
+export PKG_CONFIG_SYSROOT_DIR="$DESTDIR"
 
 # Point Harfbuzz to the Freetype files.
 export CPPFLAGS="$CPPFLAGS -I$DESTDIR/usr/include/freetype2"
