@@ -1,0 +1,11 @@
+--- a/libavformat/tls_libtls.c
++++ b/libavformat/tls_libtls.c
+@@ -141,7 +141,7 @@
+ err_ctx:
+     av_log(h, AV_LOG_ERROR, "%s\n", tls_error(p->ctx));
+     ret = AVERROR(EIO);
+-    av_fallthrough;
++    /* fall through */
+ fail:
+     if (cfg)
+         tls_config_free(cfg);
