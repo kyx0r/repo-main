@@ -2,11 +2,14 @@
 
 export DESTDIR="$1"
 
-cmake -B build \
-    -DCMAKE_BUILD_TYPE=None \
-    -DCMAKE_INSTALL_PREFIX=/usr \
-    -DSDL_STATIC=OFF \
-    -DSDL_RPATH=OFF
+sed '/DEFAULT_OGL/ s/libGL.so.1/libGLESv2.so.2/' src/video/SDL_egl.c > _
+mv _ src/video/SDL_egl.c
 
-cmake --build build
+cmake -B build \
+	-DCMAKE_BUILD_TYPE=Release \
+	-DCMAKE_INSTALL_PREFIX=/usr \
+	-DSDL_X11_XSCRNSAVER=OFF \
+	-DCMAKE_INSTALL_LIBDIR=lib
+
+cmake --build   build
 cmake --install build
