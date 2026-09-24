@@ -108,6 +108,13 @@ FNR == NR {
   cat = $3
   n = cnt[name] + 0
   if (n == 0) { print "S", name, lver; next }
+  # Pinned to a moving source (git snapshots, scm, live builds): there is no
+  # comparable version string, so a remote release number proves nothing.
+  # These need a manual snapshot re-pin (see NOTES), report as advisory.
+  if (lver ~ /^[a-z]+$/) {
+    print "A", name, lver, R[name, 1], RR[name, 1], "snapshot-pin"
+    next
+  }
   best = ""
   bestref = ""
   for (i = 1; i <= n; i++) {
