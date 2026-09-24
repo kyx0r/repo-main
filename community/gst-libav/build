@@ -2,6 +2,8 @@
 
 export DESTDIR="$1"
 
+patch -p1 < gst-libav-ffmpeg-9.patch
+
 meson setup \
     -Dprefix=/usr \
     -Dtests=disabled \
