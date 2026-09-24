@@ -1,6 +1,7 @@
 #!/bin/sh -e
 
 patch -p1 < posix.patch
+patch -p1 < libmount-include.patch
 
 ./configure \
     --prefix=/usr \
