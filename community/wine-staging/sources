@@ -1,4 +1,4 @@
-https://dl.winehq.org/wine/source/11.x/wine-11.9.tar.xz
-git+https://gitlab.winehq.org/wine/wine-staging.git@v11.9 staging
+https://dl.winehq.org/wine/source/11.x/wine-11.18.tar.xz
+git+https://gitlab.winehq.org/wine/wine-staging.git@v11.18 staging
 git+https://github.com/Frogging-Family/wine-tkg-git       wine-tkg-git
 rpath.patch
