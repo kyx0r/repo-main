@@ -2,14 +2,105 @@
 
 export DESTDIR="$1"
 
+# GCC's profile data records the object paths. Reuse the same build directory
+# for both passes, and do not reuse profiles from a previous package build.
 git fetch
 git checkout qwen4exp/mtp
 
-cmake -B build \
+build_dir="$PWD/build"
+profile_dir="$PWD/pgo-data"
+model_dir=${LLAMA_PGO_MODEL_DIR:-/root/progs/llama/Qwen3.8-Flash-Next-34}
+load_script=${LLAMA_PGO_LOAD_SCRIPT:-$model_dir/load.sh}
+rm -rf "$build_dir" "$profile_dir"
+mkdir -p "$profile_dir"
+
+# Supply flags at both compile and link time: llama-server uses shared GGML
+# libraries, whose profiles must be collected as well as the executable's.
+configure() {
+    flags="-O3 -fprofile-$1=$profile_dir"
+    if [ "$1" = use ]; then
+        flags="$flags -fprofile-correction -Wno-missing-profile"
+    fi
+    cmake -S . -B "$build_dir" \
+        -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ \
         -DGGML_VULKAN=ON \
         -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_INSTALL_PREFIX='/usr'
+        -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON \
+        -DCMAKE_C_FLAGS="$flags" \
+        -DCMAKE_CXX_FLAGS="$flags" \
+        -DCMAKE_EXE_LINKER_FLAGS="-fprofile-$1=$profile_dir" \
+        -DCMAKE_SHARED_LINKER_FLAGS="-fprofile-$1=$profile_dir" \
+        -DCMAKE_INSTALL_PREFIX=/usr
+}
 
-cmake --build build
-cmake --install build
+configure generate
+cmake --build "$build_dir" -j "${MAKEJOBS:-4}"
 
+# Train with exactly the server settings in load.sh, from its model directory.
+# The trained binary and its shared libraries must take precedence over any
+# installed llama.cpp binaries/libraries. Do not leave a profiler running on
+# failure, and wait for exit so that GCC flushes the .gcda files.
+[ -x "$load_script" ] || { echo "PGO: missing executable $load_script (set LLAMA_PGO_MODEL_DIR / LLAMA_PGO_LOAD_SCRIPT)" >&2; exit 1; }
+[ -x "$build_dir/bin/llama-server" ] || { echo 'PGO: missing llama-server' >&2; exit 1; }
+if curl -sS --max-time 2 http://127.0.0.1:8080/health >/dev/null 2>&1; then
+    echo 'PGO: port 8080 already in use; stop the existing llama-server' >&2
+    exit 1
+fi
+(
+    cd "$model_dir"
+    export PATH="$build_dir/bin:$PATH"
+    export LD_LIBRARY_PATH="$build_dir/bin${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+    # Run in a separate process group: load.sh may spawn llama-server as a
+    # child rather than replacing itself, so killing $! alone is insufficient.
+    echo "PGO: starting server; waiting up to ${LLAMA_PGO_START_TIMEOUT:-1200}s for model load (log: $profile_dir/server.log)" >&2
+    setsid "$load_script" > "$profile_dir/server.log" 2>&1 &
+    server=$!
+    stop_server() {
+        echo 'PGO: stopping training server' >&2
+        kill -TERM -- "-$server" 2>/dev/null || :
+        n=0
+        while kill -0 -- "-$server" 2>/dev/null && [ "$n" -lt 30 ]; do
+            sleep 1
+            n=$((n + 1))
+        done
+        if kill -0 -- "-$server" 2>/dev/null; then
+            echo 'PGO: server did not stop after SIGTERM; sending SIGKILL' >&2
+            kill -KILL -- "-$server" 2>/dev/null || :
+        fi
+        wait "$server" 2>/dev/null || :
+    }
+    trap 'stop_server' EXIT
+    trap 'exit 1' HUP INT TERM
+    ready=0
+    i=0
+    while [ "$i" -lt "${LLAMA_PGO_START_TIMEOUT:-1200}" ]; do
+        if curl -fsS --max-time 2 http://127.0.0.1:8080/health 2>/dev/null | grep -q '"status"[[:space:]]*:[[:space:]]*"ok"'; then
+            ready=1
+            break
+        fi
+        if ! kill -0 "$server" 2>/dev/null; then
+            echo "PGO: server exited; see $profile_dir/server.log" >&2
+            exit 1
+        fi
+        sleep 1
+        i=$((i + 1))
+    done
+    [ "$ready" -eq 1 ] || { echo "PGO: server did not become ready; see $profile_dir/server.log" >&2; exit 1; }
+    # Chat completion exercises prompt processing, CPU MoE, Vulkan offload,
+    # and speculative draft/verification, rather than only the model loader.
+    echo 'PGO: server ready; training with a chat completion' >&2
+    curl -fsS --max-time "${LLAMA_PGO_REQUEST_TIMEOUT:-600}" \
+        -H 'Content-Type: application/json' \
+        -d '{"messages":[{"role":"user","content":"Explain how speculative decoding verifies draft tokens, with a short example."}],"max_tokens":32}' \
+        http://127.0.0.1:8080/v1/chat/completions > "$profile_dir/response.json"
+    stop_server
+    trap - EXIT
+)
+
+find "$profile_dir" -name '*.gcda' | grep -q . || { echo 'PGO: no GCC profile data produced' >&2; exit 1; }
+# Clean object files without changing their paths (GCC matches profiles by
+# object path). Reconfigure to use the data collected by the first pass.
+cmake --build "$build_dir" --target clean
+configure use
+cmake --build "$build_dir" -j "${MAKEJOBS:-4}"
+cmake --install "$build_dir"
