@@ -91,7 +91,7 @@ fi
     echo 'PGO: server ready; training with a chat completion' >&2
     curl -fsS --max-time "${LLAMA_PGO_REQUEST_TIMEOUT:-600}" \
         -H 'Content-Type: application/json' \
-        -d '{"messages":[{"role":"user","content":"Explain how speculative decoding verifies draft tokens, with a short example."}],"max_tokens":32}' \
+        -d '{"messages":[{"role":"user","content":"Explain how speculative decoding verifies draft tokens, with a short example."}],"max_tokens":64}' \
         http://127.0.0.1:8080/v1/chat/completions > "$profile_dir/response.json"
     stop_server
     trap - EXIT
