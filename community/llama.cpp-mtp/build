@@ -17,17 +17,22 @@ mkdir -p "$profile_dir"
 # Supply flags at both compile and link time: llama-server uses shared GGML
 # libraries, whose profiles must be collected as well as the executable's.
 configure() {
-    flags="-O3 -fprofile-$1=$profile_dir"
+    # Honor caller flags on both passes; default to -O3 when none are supplied.
+    c_flags="${CFLAGS:--O3} -fprofile-$1=$profile_dir"
+    cxx_flags="${CXXFLAGS:-${CFLAGS:--O3}} -fprofile-$1=$profile_dir"
     if [ "$1" = use ]; then
-        flags="$flags -fprofile-correction -Wno-missing-profile"
+        c_flags="$c_flags -fprofile-correction -Wno-missing-profile"
+        cxx_flags="$cxx_flags -fprofile-correction -Wno-missing-profile"
     fi
     cmake -S . -B "$build_dir" \
         -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ \
         -DGGML_VULKAN=ON \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON \
-        -DCMAKE_C_FLAGS="$flags" \
-        -DCMAKE_CXX_FLAGS="$flags" \
+        -DCMAKE_C_FLAGS="$c_flags" \
+        -DCMAKE_CXX_FLAGS="$cxx_flags" \
+        -DCMAKE_C_FLAGS_RELEASE=-DNDEBUG \
+        -DCMAKE_CXX_FLAGS_RELEASE=-DNDEBUG \
         -DCMAKE_EXE_LINKER_FLAGS="-fprofile-$1=$profile_dir" \
         -DCMAKE_SHARED_LINKER_FLAGS="-fprofile-$1=$profile_dir" \
         -DCMAKE_INSTALL_PREFIX=/usr
