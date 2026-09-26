@@ -1,0 +1,18 @@
+The version the game reports is read from Git.  A release tarball carries no
+Git metadata: git_describe() falls back to its HEAD-HASH placeholder and the
+dirty check tacks on "-dirty", so the binary introduces itself as
+"HEAD-HASH-dirty".  Fall back to the release version when Git is of no help.
+
+--- a/src/version.cmake
++++ b/src/version.cmake
+@@ -18,6 +18,10 @@
+     endif()
+ endif()
+ 
++if(GIT_VERSION MATCHES "HEAD-HASH" OR GIT_VERSION MATCHES "GIT-NOTFOUND")
++    set(GIT_VERSION "0.I-1")
++endif()
++
+ message(NOTICE ${GIT_VERSION})
+ 
+ if("${GIT_VERSION}" MATCHES "GIT-NOTFOUND")

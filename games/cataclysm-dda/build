@@ -1,0 +1,47 @@
+#!/bin/sh -e
+
+# flatbuffers (vendored) needs strtoll_l()/strtoull_l(), which musl does not
+# provide.  The install rules reference the data/help directory removed
+# upstream.  The version is read from Git, which a release tarball lacks.
+patch -p1 < musl-strtoll-l.patch
+patch -p1 < fix-install-data-help.patch
+patch -p1 < fix-release-version.patch
+
+export DESTDIR="$1"
+
+# Upstream builds with -Werror and GCC 16 promotes several new diagnostics in
+# this tree to hard errors.  The per configuration flags come after the
+# project's own flags, which is the only place -Wno-error takes effect.
+cmake -B build \
+    -G Ninja \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_CXX_FLAGS_RELEASE="$CXXFLAGS -DNDEBUG -Wno-error" \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DTILES=True \
+    -DCURSES=False \
+    -DSOUND=True \
+    -DLOCALIZE=False \
+    -DTESTS=False \
+    -DBACKTRACE=False \
+    -DUSE_XDG_DIR=True
+
+cmake --build build
+cmake --install build
+
+# The desktop entry, icon and documentation are installed into the game data
+# directory, move them over to the standard locations.
+install -d "$1/usr/share/doc"
+
+mv "$1/usr/share/cataclysm-dda/doc" "$1/usr/share/doc/cataclysm-dda"
+
+for file in \
+    applications/org.cataclysmdda.CataclysmDDA.desktop \
+    icons/hicolor/scalable/apps/org.cataclysmdda.CataclysmDDA.svg \
+    metainfo/org.cataclysmdda.CataclysmDDA.appdata.xml
+do
+    install -m644 -D \
+        "$1/usr/share/cataclysm-dda/xdg/${file##*/}" \
+        "$1/usr/share/$file"
+done
+
+rm -rf "$1/usr/share/cataclysm-dda/xdg"

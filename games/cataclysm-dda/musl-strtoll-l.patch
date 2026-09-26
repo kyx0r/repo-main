@@ -1,0 +1,40 @@
+musl does not provide the GNU locale-specific integer conversion helpers
+strtoll_l() and strtoull_l(), only the floating point ones (strtod_l() et al).
+flatbuffers, which is vendored in src/third-party, hard-requires the locale
+independent parsing functions, so provide the two missing ones as thin wrappers
+around the plain ISO C functions.  The locale handed down by ClassicLocale is
+always the classic "C" locale, so the behaviour is identical.
+
+--- a/src/third-party/flatbuffers/base.h
++++ b/src/third-party/flatbuffers/base.h
+@@ -266,12 +266,30 @@
+     #define FLATBUFFERS_LOCALE_INDEPENDENT 1
+   #else
+     #define FLATBUFFERS_LOCALE_INDEPENDENT 0
+   #endif
+ #endif  // !FLATBUFFERS_LOCALE_INDEPENDENT
+ 
++// musl libc does not provide the GNU locale-specific integer conversion
++// extensions strtoll_l()/strtoull_l(), only the floating point ones.  The
++// locale passed down by ClassicLocale is always the classic "C" locale, so the
++// plain ISO C functions are equivalent.
++#if FLATBUFFERS_LOCALE_INDEPENDENT && !defined(__GLIBC__) && \
++    !defined(_WIN32) && !defined(__BIONIC__)
++#include <clocale>
++inline long long strtoll_l(const char *__restrict nptr,
++                           char **__restrict endptr, int base, locale_t) {
++  return strtoll(nptr, endptr, base);
++}
++inline unsigned long long strtoull_l(const char *__restrict nptr,
++                                     char **__restrict endptr, int base,
++                                     locale_t) {
++  return strtoull(nptr, endptr, base);
++}
++#endif
++
+ // Suppress Undefined Behavior Sanitizer (recoverable only). Usage:
+ // - __supress_ubsan__("undefined")
+ // - __supress_ubsan__("signed-integer-overflow")
+ #if defined(__clang__) && (__clang_major__ > 3 || (__clang_major__ == 3 && __clang_minor__ >=7))
+   #define __supress_ubsan__(type) __attribute__((no_sanitize(type)))
+ #elif defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__ >= 409)

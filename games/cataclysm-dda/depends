@@ -1,0 +1,10 @@
+cmake           make
+flac
+freetype-harfbuzz
+pkgconf         make
+samurai         make
+sdl2-compat
+sdl2_image
+sdl2_mixer
+sdl2_ttf
+zlib

@@ -1,0 +1,4 @@
+https://github.com/CleverRaven/Cataclysm-DDA/archive/refs/tags/0.I-1.tar.gz
+musl-strtoll-l.patch
+fix-install-data-help.patch
+fix-release-version.patch
