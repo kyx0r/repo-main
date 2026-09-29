@@ -213,7 +213,7 @@ index c1fb599..ad6eb33 100755
  cat conftest.log
  
  [ "$SRCPATH" != "." ] && ln -sf ${SRCPATH}/Makefile ./Makefile
--mkdir -p common/{aarch64,arm,mips,ppc,x86,loongarch} encoder extras filters/video input output tools
+-mkdir -p common/{aarch64,arm,mips,ppc,x86} encoder extras filters/video input output tools
 +mkdir -p common/aarch64 common/arm common/mips common/ppc common/x86
 +mkdir -p encoder extras filters/video input output tools
  
