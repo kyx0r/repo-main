@@ -15,9 +15,9 @@ mkdir -p "$profile_dir"
 # Supply flags at both compile and link time: llama-server uses shared GGML
 # libraries, whose profiles must be collected as well as the executable's.
 configure() {
-    # Honor caller flags on both passes; default to -O3 when none are supplied.
-    c_flags="${CFLAGS:--O3} -fprofile-$1=$profile_dir"
-    cxx_flags="${CXXFLAGS:-${CFLAGS:--O3}} -fprofile-$1=$profile_dir"
+    # Honor caller flags on both passes; default to -O2 when none are supplied.
+    c_flags="${CFLAGS:--O2} -fprofile-$1=$profile_dir"
+    cxx_flags="${CXXFLAGS:-${CFLAGS:--O2}} -fprofile-$1=$profile_dir"
     if [ "$1" = use ]; then
         c_flags="$c_flags -fprofile-correction -Wno-missing-profile"
         cxx_flags="$cxx_flags -fprofile-correction -Wno-missing-profile"
