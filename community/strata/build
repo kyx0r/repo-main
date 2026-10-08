@@ -1,0 +1,41 @@
+#!/bin/sh -e
+
+prefix=${KISS_ROCM_PREFIX:-/usr/lib/rocm}
+export ROCM_PATH="$prefix" HIP_PATH="$prefix" HIP_PLATFORM=amd
+export HIP_CLANG_PATH="$prefix/llvm/bin"
+export PATH="$prefix/llvm/bin:$prefix/bin:$PATH"
+
+patch -p1 < rocm6-blas.patch
+patch -p1 < rocm6-q2-zero.patch
+
+archs=${KISS_ROCM_ARCHS:-gfx1100}
+cmake -B build -G Ninja \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DCMAKE_PREFIX_PATH="$prefix;$prefix/llvm" \
+    -DCMAKE_C_COMPILER="$prefix/llvm/bin/clang" \
+    -DCMAKE_CXX_COMPILER="$prefix/llvm/bin/clang++" \
+    -DCMAKE_HIP_COMPILER="$prefix/llvm/bin/clang++" \
+    -DCMAKE_HIP_COMPILER_ROCM_ROOT="$prefix" \
+    -DCMAKE_HIP_ARCHITECTURES="$archs" \
+    -DGPU_TARGETS="$archs" \
+    -DCMAKE_INSTALL_RPATH="$prefix/lib;$prefix/llvm/lib" \
+    -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON \
+    -DCMAKE_DISABLE_FIND_PACKAGE_hipblaslt=ON \
+    -DFETCHCONTENT_FULLY_DISCONNECTED=ON \
+    -DSTRATA_GGML_DIR="$PWD/llama.cpp" \
+    -DSTRATA_NATIVE_EXPERTS=ON \
+    -DSTRATA_ENABLE_CUDA=OFF \
+    -DSTRATA_ENABLE_HIP=ON \
+    -DSTRATA_HIP_GFX906="${KISS_STRATA_GFX906:-OFF}" \
+    -DSTRATA_PORTABLE=ON \
+    -DSTRATA_BUILD_TESTS=OFF
+
+# Upstream has no install rules. Do not build/install all microbenchmarks.
+cmake --build build --target strata strata-plan strata-gguf strata-dequant strata-device
+install -Dm755 build/strata "$1/usr/bin/strata"
+for bin in strata-plan strata-gguf strata-dequant strata-device; do
+    install -Dm755 "build/$bin" "$1/usr/bin/$bin"
+done
+install -Dm644 LICENSE "$1/usr/share/licenses/strata/LICENSE"
+install -Dm644 README.md "$1/usr/share/doc/strata/README.md"

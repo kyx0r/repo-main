@@ -1,0 +1,34 @@
+#!/bin/sh -e
+
+prefix=${KISS_ROCM_PREFIX:-/usr/lib/rocm}
+export ROCM_PATH="$prefix" HIP_PATH="$prefix" HIP_PLATFORM=amd
+export HIP_CLANG_PATH="$prefix/llvm/bin"
+export PATH="$prefix/llvm/bin:$prefix/bin:$PATH"
+patch -p1 < musl-stack.patch
+patch -p1 < musl-affinity.patch
+patch -p1 < musl-path.patch
+cmake -B build -G Ninja \
+    -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX="$prefix" \
+    -DCMAKE_INSTALL_LIBDIR=lib \
+    -DCMAKE_PREFIX_PATH="$prefix;$prefix/llvm" \
+    -DCMAKE_INSTALL_RPATH="$prefix/lib;$prefix/llvm/lib" \
+    -DCMAKE_C_COMPILER="$prefix/llvm/bin/clang" \
+    -DCMAKE_CXX_COMPILER="$prefix/llvm/bin/clang++" \
+    -DCLR_BUILD_HIP=ON \
+    -DCLR_BUILD_OCL=OFF \
+    -DHIP_PLATFORM=amd \
+    -DHIP_COMMON_DIR="$PWD/HIP" \
+    -DHIPCC_BIN_DIR="$prefix/bin" \
+    -DROCM_INSTALL_PATH="$prefix" \
+    -DCMAKE_DISABLE_FIND_PACKAGE_rocprofiler-register=ON \
+    -DHIP_ENABLE_ROCPROFILER_REGISTER=OFF \
+    -DBUILD_TESTING=OFF
+cmake --build build
+DESTDIR="$1" cmake --install build
+
+# The separately packaged compiler driver owns these files.
+for driver in hipcc hipconfig hipcc.pl hipconfig.pl hipvars.pm; do
+    rm -f "$1$prefix/bin/$driver"
+done

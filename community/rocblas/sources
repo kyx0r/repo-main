@@ -1,0 +1,3 @@
+https://github.com/ROCm/rocBLAS/archive/refs/tags/rocm-6.4.3.tar.gz
+https://github.com/ROCm/Tensile/archive/be49885fce2a61b600ae4593f1c2d00c8b4fa11e.tar.gz tensile
+patches/optional-roctx.patch

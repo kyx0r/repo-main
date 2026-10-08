@@ -1,0 +1,13 @@
+--- a/amd/hipcc/CMakeLists.txt
++++ b/amd/hipcc/CMakeLists.txt
+@@ -18,8 +18,8 @@
+ set(CMAKE_CXX_STANDARD 17)
+ set(CMAKE_CXX_STANDARD_REQUIRED True)
+ 
+-set(ADDITIONAL_SHARED_LIBRARIES_TO_LINK
+-  libstdc++fs.so)
++set(ADDITIONAL_SHARED_LIBRARIES_TO_LINK "")
++# std::filesystem is in libstdc++ itself with GCC 9 and later.
+ 
+ set(HIPCC_BIN
+   hipcc)

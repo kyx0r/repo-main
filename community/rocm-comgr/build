@@ -1,0 +1,23 @@
+#!/bin/sh -e
+
+prefix=${KISS_ROCM_PREFIX:-/usr/lib/rocm}
+export ROCM_PATH="$prefix" HIP_PATH="$prefix" HIP_PLATFORM=amd
+export HIP_CLANG_PATH="$prefix/llvm/bin"
+export PATH="$prefix/llvm/bin:$prefix/bin:$PATH"
+cmake -S amd/comgr -B build -G Ninja \
+    -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX="$prefix" \
+    -DCMAKE_INSTALL_LIBDIR=lib \
+    -DCMAKE_PREFIX_PATH="$prefix;$prefix/llvm" \
+    -DCMAKE_INSTALL_RPATH="$prefix/lib;$prefix/llvm/lib" \
+    -DCMAKE_C_COMPILER="$prefix/llvm/bin/clang" \
+    -DCMAKE_CXX_COMPILER="$prefix/llvm/bin/clang++" \
+    -DLLVM_DIR="$prefix/llvm/lib/cmake/llvm" \
+    -DClang_DIR="$prefix/llvm/lib/cmake/clang" \
+    -DLLD_DIR="$prefix/llvm/lib/cmake/lld" \
+    -DCOMGR_BUILD_SHARED_LIBS=ON \
+    -DCOMGR_DISABLE_SPIRV=ON \
+    -DBUILD_TESTING=OFF
+cmake --build build
+DESTDIR="$1" cmake --install build

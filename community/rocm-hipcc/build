@@ -1,0 +1,20 @@
+#!/bin/sh -e
+
+prefix=${KISS_ROCM_PREFIX:-/usr/lib/rocm}
+export ROCM_PATH="$prefix" HIP_PATH="$prefix" HIP_PLATFORM=amd
+export HIP_CLANG_PATH="$prefix/llvm/bin"
+export PATH="$prefix/llvm/bin:$prefix/bin:$PATH"
+patch -p1 < filesystem.patch
+cmake -S amd/hipcc -B build -G Ninja \
+    -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX="$prefix" \
+    -DCMAKE_INSTALL_LIBDIR=lib \
+    -DCMAKE_PREFIX_PATH="$prefix;$prefix/llvm" \
+    -DCMAKE_INSTALL_RPATH="$prefix/lib;$prefix/llvm/lib" \
+    -DCMAKE_CXX_COMPILER="$prefix/llvm/bin/clang++"
+cmake --build build
+DESTDIR="$1" cmake --install build
+
+# Windows-only compatibility links have no targets in a Linux install.
+rm -f "$1$prefix/hip/bin/hipcc.bat" "$1$prefix/hip/bin/hipconfig.bat"

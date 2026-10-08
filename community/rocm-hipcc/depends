@@ -1,0 +1,5 @@
+cmake make
+perl
+rocm-core
+rocm-llvm
+samurai make

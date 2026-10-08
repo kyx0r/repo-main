@@ -1,0 +1,8 @@
+cmake make
+libdrm
+libelf
+numactl
+pkgconf make
+rocm-core
+rocm-llvm make
+samurai make

@@ -1,0 +1,10 @@
+--- a/runtime/hsa-runtime/core/inc/amd_elf_image.hpp
++++ b/runtime/hsa-runtime/core/inc/amd_elf_image.hpp
+@@ -43,6 +43,7 @@
+ #ifndef AMD_ELF_IMAGE_HPP_
+ #define AMD_ELF_IMAGE_HPP_
+ 
++#include <stdint.h>
+ #include <string>
+ #include <sstream>
+ #include <vector>

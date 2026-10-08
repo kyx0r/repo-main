@@ -1,0 +1,24 @@
+--- a/llvm/lib/Support/Threading.cpp
++++ b/llvm/lib/Support/Threading.cpp
+@@ -77,8 +77,8 @@
+ // keyword.
+ #include "llvm/Support/thread.h"
+ 
+-#if defined(__APPLE__)
+-  // Darwin's default stack size for threads except the main one is only 512KB,
++#if defined(__APPLE__) || (defined(__linux__) && !defined(__GLIBC__))
++  // Darwin and musl have small default worker stacks (512KB / 128KB),
+   // which is not enough for some/many normal LLVM compilations. This implements
+   // the same interface as std::thread but requests the same stack size as the
+   // main thread (8MB) before creation.
+--- a/clang/lib/Driver/ToolChains/Gnu.cpp
++++ b/clang/lib/Driver/ToolChains/Gnu.cpp
+@@ -2547,6 +2547,8 @@
+ 
+   static const char *const X86_64LibDirs[] = {"/lib64", "/lib"};
+   static const char *const X86_64Triples[] = {
++      "x86_64-linux-musl",      "x86_64-pc-linux-musl",
++      "x86_64-unknown-linux-musl",
+       "x86_64-linux-gnu",       "x86_64-unknown-linux-gnu",
+       "x86_64-pc-linux-gnu",    "x86_64-redhat-linux6E",
+       "x86_64-redhat-linux",    "x86_64-suse-linux",

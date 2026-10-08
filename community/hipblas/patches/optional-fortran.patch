@@ -1,0 +1,23 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -42,7 +42,8 @@
+   set( CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel." )
+ endif()
+ 
+-if (NOT WIN32)
++option(BUILD_FORTRAN_CLIENTS "Build Fortran modules and clients" OFF)
++if (NOT WIN32 AND BUILD_FORTRAN_CLIENTS)
+     if ( NOT DEFINED CMAKE_Fortran_COMPILER AND NOT DEFINED ENV{FC} )
+       set( CMAKE_Fortran_COMPILER  "gfortran" )
+     endif()
+--- a/library/src/CMakeLists.txt
++++ b/library/src/CMakeLists.txt
+@@ -49,7 +49,7 @@
+ )
+ 
+ # Create hipBLAS Fortran module
+-if(NOT WIN32)
++if(NOT WIN32 AND BUILD_FORTRAN_CLIENTS)
+     add_library(hipblas_fortran ${hipblas_f90_source})
+ endif()
+ 

@@ -1,0 +1,5 @@
+cmake make
+rocm-cmake make
+rocm-device-libs make
+rocm-llvm
+samurai make

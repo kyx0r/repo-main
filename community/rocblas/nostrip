@@ -1,0 +1,2 @@
+rocBLAS ships AMDGPU ELF code objects. Host strip cannot recognize them;
+keep device metadata and kernels intact, as well as the host library.

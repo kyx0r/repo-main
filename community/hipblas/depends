@@ -1,0 +1,7 @@
+cmake make
+git make
+hipblas-common
+rocblas
+rocm-cmake make
+rocm-hip
+samurai make

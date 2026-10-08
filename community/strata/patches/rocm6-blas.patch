@@ -1,0 +1,28 @@
+--- a/include/strata/hip_compat/cublas_v2.h
++++ b/include/strata/hip_compat/cublas_v2.h
+@@ -2,8 +2,8 @@
+ #include <hipblas/hipblas.h>
+ #include <hipblas/hipblas-version.h>
+ 
+-#if hipblasVersionMajor == 0
+-// Ubuntu's hipBLAS 0.54 has no workspace API or compute-type enum. Use its
++#if hipblasVersionMajor < 3
++// hipBLAS 2.x (ROCm 6.4), like Ubuntu's 0.54, has no workspace API. Use its
+ // underlying rocBLAS API directly, including ownership of the real handle,
+ // so the engine's explicit workspace contract is preserved.
+ #include <rocblas/rocblas.h>
+--- a/cmake/hip_backend.cmake
++++ b/cmake/hip_backend.cmake
+@@ -57,10 +57,10 @@
+ endforeach()
+ find_package(hip CONFIG REQUIRED)
+ find_package(hipblas CONFIG REQUIRED)
+-# Older distro hipBLAS has no workspace API. The compatibility shim uses
++# hipBLAS before 3.0 has no workspace API. The compatibility shim uses
+ # rocBLAS directly for that version; newer hipBLAS keeps its existing path.
+ set(STRATA_HIP_BLAS_TARGETS roc::hipblas)
+-if(hipblas_VERSION VERSION_LESS "1.0")
++if(hipblas_VERSION VERSION_LESS "3.0")
+   find_package(rocblas CONFIG REQUIRED)
+   list(APPEND STRATA_HIP_BLAS_TARGETS roc::rocblas)
+ endif()

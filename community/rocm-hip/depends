@@ -1,0 +1,10 @@
+cmake make
+libglvnd make
+numactl
+python-cppheaderparser make
+rocm-cmake make
+rocm-comgr
+rocm-device-libs
+rocm-hipcc
+rocm-runtime
+samurai make

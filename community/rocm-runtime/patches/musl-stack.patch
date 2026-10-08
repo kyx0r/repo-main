@@ -1,0 +1,13 @@
+--- a/runtime/hsa-runtime/core/util/lnx/os_linux.cpp
++++ b/runtime/hsa-runtime/core/util/lnx/os_linux.cpp
+@@ -114,6 +114,10 @@
+         fprintf(stderr, "pthread_attr_destroy failed: %s\n", strerror(err));
+     });
+ 
++    // musl defaults to a 128 KiB pthread stack; compiler callbacks need more.
++#if defined(__linux__) && !defined(__GLIBC__)
++    stackSize = Max(uint(8 * 1024 * 1024), stackSize);
++#endif
+     if (stackSize != 0) {
+       stackSize = Max(uint(PTHREAD_STACK_MIN), stackSize);
+       stackSize = AlignUp(stackSize, 4096);

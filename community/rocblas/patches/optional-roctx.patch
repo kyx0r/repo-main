@@ -1,0 +1,61 @@
+--- a/library/CMakeLists.txt
++++ b/library/CMakeLists.txt
+@@ -44,6 +44,8 @@
+ # ########################################################################
+ # standardized library settings
+ # ########################################################################
++option(ROCBLAS_ENABLE_ROCTX "Enable optional roctracer range annotations" ON)
++
+ function( rocblas_library_settings lib_target_ )
+ 
+   message(STATUS "** rocblas_library_settings: ${lib_target_}")
+@@ -79,8 +81,9 @@
+   if (WIN32)
+     target_link_libraries( ${lib_target_} PRIVATE hip::device )
+   else()
+-    target_link_libraries( ${lib_target_} PRIVATE hip::device -lstdc++fs --rtlib=compiler-rt --unwindlib=libgcc)
+-    if (BUILD_SHARED_LIBS)
++    target_link_libraries( ${lib_target_} PRIVATE hip::device --rtlib=compiler-rt --unwindlib=libgcc)
++    if (BUILD_SHARED_LIBS AND ROCBLAS_ENABLE_ROCTX)
++      target_compile_definitions(${lib_target_} PRIVATE ROCBLAS_ENABLE_ROCTX=1)
+       target_link_libraries(${lib_target_} PRIVATE -lroctx64)
+     endif()
+   endif()
+--- a/library/src/include/logging.hpp
++++ b/library/src/include/logging.hpp
+@@ -40,7 +40,7 @@
+ #include <unordered_map>
+ #include <utility>
+ 
+-#if !defined(ROCBLAS_STATIC_LIB) && !defined(WIN32)
++#if defined(ROCBLAS_ENABLE_ROCTX) && !defined(ROCBLAS_STATIC_LIB) && !defined(WIN32)
+ #include <roctracer/roctx.h>
+ #endif
+ 
+@@ -453,7 +453,7 @@
+ public:
+     Logger() = default;
+ 
+-#if !defined(ROCBLAS_STATIC_LIB) && !defined(WIN32)
++#if defined(ROCBLAS_ENABLE_ROCTX) && !defined(ROCBLAS_STATIC_LIB) && !defined(WIN32)
+     void log_range(const std::string& name)
+     {
+         if(!m_active)
+@@ -472,7 +472,7 @@
+         // ((os << sep << std::forward<Ts>(xs)), ...);
+         (void)(int[]){(os << sep << std::forward<Ts>(xs), 0)...};
+ 
+-#if !defined(ROCBLAS_STATIC_LIB) && !defined(WIN32)
++#if defined(ROCBLAS_ENABLE_ROCTX) && !defined(ROCBLAS_STATIC_LIB) && !defined(WIN32)
+         log_range(os.str());
+ #endif
+         os << std::endl;
+@@ -527,7 +527,7 @@
+ 
+     ~Logger()
+     {
+-#if !defined(ROCBLAS_STATIC_LIB) && !defined(WIN32)
++#if defined(ROCBLAS_ENABLE_ROCTX) && !defined(ROCBLAS_STATIC_LIB) && !defined(WIN32)
+         if(m_active)
+         {
+             roctxRangePop();

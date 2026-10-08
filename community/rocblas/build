@@ -1,0 +1,41 @@
+#!/bin/sh -e
+
+prefix=${KISS_ROCM_PREFIX:-/usr/lib/rocm}
+export ROCM_PATH="$prefix" HIP_PATH="$prefix" HIP_PLATFORM=amd
+export HIP_CLANG_PATH="$prefix/llvm/bin"
+export PATH="$prefix/llvm/bin:$prefix/bin:$PATH"
+
+patch -p1 < optional-roctx.patch
+
+# A semicolon-separated list; use the same targets when building Strata.
+archs=${KISS_ROCM_ARCHS:-gfx1100}
+cmake -B build -G Ninja \
+    -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX="$prefix" \
+    -DCMAKE_INSTALL_LIBDIR=lib \
+    -DCMAKE_PREFIX_PATH="$prefix;$prefix/llvm" \
+    -DCMAKE_INSTALL_RPATH="$prefix/lib;$prefix/llvm/lib" \
+    -DCMAKE_C_COMPILER="$prefix/llvm/bin/clang" \
+    -DCMAKE_CXX_COMPILER="$prefix/llvm/bin/clang++" \
+    -DROCM_PATH="$prefix" \
+    -DGPU_TARGETS="$archs" \
+    -DBUILD_WITH_TENSILE=ON \
+    -DBUILD_WITH_PIP=OFF \
+    -DBUILD_WITH_HIPBLASLT=OFF \
+    -DROCBLAS_ENABLE_ROCTX=OFF \
+    -DCMAKE_CXX_STANDARD=17 \
+    -DBUILD_CLIENTS_TESTS=OFF \
+    -DBUILD_CLIENTS_BENCHMARKS=OFF \
+    -DBUILD_CLIENTS_SAMPLES=OFF \
+    -DTensile_ROOT="$PWD/tensile/Tensile" \
+    -DTensile_DIR="$PWD/tensile/Tensile/cmake" \
+    -DTensile_COMPILER=hipcc \
+    -DTensile_LIBRARY_FORMAT=yaml \
+    -DTENSILE_USE_MSGPACK=OFF \
+    -DTENSILE_USE_LLVM=ON \
+    -DTENSILE_USE_OPENMP=OFF \
+    -DTensile_CPU_THREADS="${KISS_ROCM_TENSILE_JOBS:-8}" \
+    -DLLVM_DIR="$prefix/llvm/lib/cmake/llvm"
+cmake --build build
+DESTDIR="$1" cmake --install build

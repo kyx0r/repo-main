@@ -1,0 +1,19 @@
+--- a/rocclr/os/os_posix.cpp
++++ b/rocclr/os/os_posix.cpp
+@@ -399,6 +399,16 @@
+     std::call_once(initOnce, guessTlsSize);
+     ::pthread_attr_setstacksize(&threadAttr, thread->stackSize_ + guardsize + tlsSize);
+   }
++
++  // musl has a much smaller default pthread stack than glibc. Preserve
++  // larger caller requests, including their guard and TLS accounting.
++#if defined(__linux__) && !defined(__GLIBC__)
++  size_t stackSize = 0;
++  ::pthread_attr_getstacksize(&threadAttr, &stackSize);
++  if (stackSize < 8 * 1024 * 1024) {
++    ::pthread_attr_setstacksize(&threadAttr, 8 * 1024 * 1024);
++  }
++#endif
+ 
+   // We never plan the use join, so free the resources now.
+   ::pthread_attr_setdetachstate(&threadAttr, PTHREAD_CREATE_DETACHED);

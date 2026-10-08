@@ -1,0 +1,78 @@
+--- a/rocclr/os/os.hpp
++++ b/rocclr/os/os.hpp
+@@ -382,62 +382,34 @@
+ 
+ inline bool Os::ThreadAffinityMask::isSet(uint cpu) const { return CPU_ISSET(cpu, &mask_); }
+ 
+-inline bool Os::ThreadAffinityMask::isEmpty() const {
+-  for (__cpu_mask bits : mask_.__bits) {
+-    if (bits != 0) {
+-      return false;
+-    }
+-  }
+-  return true;
+-}
++// Use the public Linux CPU_* interface, not glibc's private __cpu_mask
++// type or cpu_set_t word layout (which is different on musl).
++inline bool Os::ThreadAffinityMask::isEmpty() const { return CPU_COUNT(&mask_) == 0; }
+ 
+ inline void Os::ThreadAffinityMask::set(const cpu_set_t& mask) { mask_ = mask; }
+ 
+ inline void Os::ThreadAffinityMask::clear(const cpu_set_t& mask) {
+-  for (uint i = 0; i < sizeof(mask_.__bits) / sizeof(mask_.__bits[0]); ++i) {
+-    mask_.__bits[i] &= ~mask.__bits[i];
++  for (uint cpu = 0; cpu < CPU_SETSIZE; ++cpu) {
++    if (CPU_ISSET(cpu, &mask)) CPU_CLR(cpu, &mask_);
+   }
+ }
+ 
+ inline void Os::ThreadAffinityMask::adjust(cpu_set_t& mask) const {
+-  for (uint i = 0; i < sizeof(mask_.__bits) / sizeof(mask_.__bits[0]); ++i) {
+-    mask.__bits[i] &= mask_.__bits[i];
+-  }
+-}
+-
+-inline uint Os::ThreadAffinityMask::countSet() const {
+-  uint count = 0;
+-  for (__cpu_mask bits : mask_.__bits) {
+-    count += countBitsSet(bits);
+-  }
+-  return count;
+-}
++  CPU_AND(&mask, &mask, &mask_);
++}
++
++inline uint Os::ThreadAffinityMask::countSet() const { return CPU_COUNT(&mask_); }
+ 
+ inline uint Os::ThreadAffinityMask::getFirstSet() const {
+-  uint i = 0;
+-  for (__cpu_mask bits : mask_.__bits) {
+-    if (bits != 0) {
+-      return leastBitSet(bits) + (i * (8 * sizeof(__cpu_mask)));
+-    }
+-
+-    ++i;
++  for (uint cpu = 0; cpu < CPU_SETSIZE; ++cpu) {
++    if (CPU_ISSET(cpu, &mask_)) return cpu;
+   }
+   return (uint)-1;
+ }
+ 
+ inline uint Os::ThreadAffinityMask::getNextSet(uint cpu) const {
+-  const uint32_t* bits = (const uint32_t*)mask_.__bits;
+-  ++cpu;
+-  uint j = cpu % (8 * sizeof(uint32_t));
+-  for (uint i = cpu / (8 * sizeof(uint32_t)); i < sizeof(mask_.__bits) / (sizeof(uint32_t)); ++i) {
+-    if (bits[i] != 0) {
+-      for (; j < (8 * sizeof(uint32_t)); ++j) {
+-        if (0 != (bits[i] & ((uint32_t)1 << j))) {
+-          return i * (8 * sizeof(uint32_t)) + j;
+-        }
+-      }
+-    }
+-    j = 0;
++  for (++cpu; cpu < CPU_SETSIZE; ++cpu) {
++    if (CPU_ISSET(cpu, &mask_)) return cpu;
+   }
+   return (uint)-1;
+ }

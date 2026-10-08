@@ -1,0 +1,5 @@
+cmake make
+hipblas
+rocblas
+rocm-hip
+samurai make

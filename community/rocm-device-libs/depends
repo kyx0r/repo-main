@@ -1,0 +1,4 @@
+cmake make
+rocm-cmake make
+rocm-llvm make
+samurai make

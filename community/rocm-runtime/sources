@@ -1,0 +1,4 @@
+https://github.com/ROCm/ROCR-Runtime/archive/refs/tags/rocm-6.4.3.tar.gz
+patches/musl-stack.patch
+patches/musl-cacheline.patch
+patches/headers.patch

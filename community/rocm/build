@@ -1,0 +1,8 @@
+#!/bin/sh -e
+
+install -Dm644 README.md "$1/usr/share/doc/rocm/README.md"
+install -Dm644 VALIDATION.md "$1/usr/share/doc/rocm/VALIDATION.md"
+for file in hip-smoke.cpp hiprtc-smoke.cpp blas-smoke.cpp; do
+    install -Dm644 "$file" "$1/usr/share/doc/rocm/$file"
+done
+install -Dm755 smoke-test "$1/usr/share/doc/rocm/smoke-test"

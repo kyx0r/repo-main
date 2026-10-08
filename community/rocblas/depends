@@ -1,0 +1,11 @@
+cmake make
+git make
+python make
+python-joblib make
+python-msgpack make
+python-rich make
+python-yaml make
+rocm-cmake make
+rocm-hip
+rocm-llvm
+samurai make
