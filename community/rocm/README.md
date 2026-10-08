@@ -90,7 +90,9 @@ separately and are not downloaded by the package.
 * AMD Clang recognizes KISS's x86_64 musl GCC triples to locate libstdc++ and
   startup files. Host executables target musl; device objects target AMDGPU.
 * Private compiler-rt builtins are built for the host musl triple, including
-  `_Float16` conversion helpers needed by HIP-generated host code. Sanitizers
+  `_Float16` conversion helpers needed by HIP-generated host code. Compile-only
+  `_Float16`/`__bf16` capability probes and the detected bfloat16 definition keep
+  the helpers' calling convention consistent with Clang's host code. Sanitizers
   and the other optional compiler-rt runtimes are not included.
 * HSA cache flushing uses x86 CPUID for the CLFLUSH line size on musl,
   which has no glibc-specific cache-size `sysconf` keys.
@@ -129,7 +131,9 @@ KISS_ROCM_TEST_ARCH=gfx1100 /usr/share/doc/rocm/smoke-test
 strata --help
 ```
 
-The smoke test builds and runs a HIP kernel, a HIPRTC/COMGR JIT kernel with
+The smoke test first builds a host compiler-rt `_Float16`/`__bf16` ABI
+regression with the private Clang, checking all 65,536 bit patterns of both
+formats. It then builds and runs a HIP kernel, a HIPRTC/COMGR JIT kernel with
 module launch, and a checked 2x2 hipBLAS/rocBLAS SGEMM; it needs a supported,
 accessible GPU and the compiler packages. Select
 the actual GPU with HIP_VISIBLE_DEVICES if necessary. It is not a model run or

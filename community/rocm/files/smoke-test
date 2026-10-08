@@ -1,4 +1,5 @@
 #!/bin/sh -eu
+set -eu
 prefix=${KISS_ROCM_PREFIX:-/usr/lib/rocm}
 arch=${KISS_ROCM_TEST_ARCH:-gfx1100}
 export ROCM_PATH="$prefix" HIP_PATH="$prefix" HIP_PLATFORM=amd
@@ -8,6 +9,9 @@ export PATH="$prefix/bin:$prefix/llvm/bin:$PATH"
 source_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT HUP INT TERM
+"$prefix/llvm/bin/clang" -O2 -fno-builtin --rtlib=compiler-rt \
+    "$source_dir/compiler-rt-smoke.c" -o "$work/compiler-rt"
+"$work/compiler-rt"
 "$prefix/bin/rocminfo"
 for test in hip hiprtc blas; do
     case $test in hip) libs=;; hiprtc) libs='-lhiprtc';; blas) libs='-lhipblas -lrocblas';; esac

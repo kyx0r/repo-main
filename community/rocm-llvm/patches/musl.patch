@@ -22,3 +22,25 @@
        "x86_64-linux-gnu",       "x86_64-unknown-linux-gnu",
        "x86_64-pc-linux-gnu",    "x86_64-redhat-linux6E",
        "x86_64-redhat-linux",    "x86_64-suse-linux",
+--- a/compiler-rt/lib/builtins/CMakeLists.txt
++++ b/compiler-rt/lib/builtins/CMakeLists.txt
+@@ -867,11 +867,15 @@
+           endif()
+         endif()
+       endif()
+-      check_c_source_compiles("_Float16 foo(_Float16 x) { return x; }"
+-                              COMPILER_RT_HAS_${arch}_FLOAT16)
++      # These are compiler type/ABI probes, not executable link probes.
++      # Linking functions without main misdetects _Float16 in runtimes builds
++      # and makes the x86 half builtins use the incompatible integer ABI.
++      try_compile_only(COMPILER_RT_HAS_${arch}_FLOAT16
++                       SOURCE "_Float16 foo(_Float16 x) { return x; }")
+       append_list_if(COMPILER_RT_HAS_${arch}_FLOAT16 -DCOMPILER_RT_HAS_FLOAT16 BUILTIN_CFLAGS_${arch})
+-      check_c_source_compiles("__bf16 foo(__bf16 x) { return x; }"
+-                              COMPILER_RT_HAS_${arch}_BFLOAT16)
++      try_compile_only(COMPILER_RT_HAS_${arch}_BFLOAT16
++                       SOURCE "__bf16 foo(__bf16 x) { return x; }")
++      append_list_if(COMPILER_RT_HAS_${arch}_BFLOAT16 -DCOMPILER_RT_HAS_BFLOAT16 BUILTIN_CFLAGS_${arch})
+       # Build BF16 files only when "__bf16" is available.
+       if(COMPILER_RT_HAS_${arch}_BFLOAT16)
+         list(APPEND ${arch}_SOURCES ${BF16_SOURCES})
