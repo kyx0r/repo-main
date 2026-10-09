@@ -1,3 +1,4 @@
+bash make
 cmake make
 libdrm
 libelf
@@ -6,3 +7,4 @@ pkgconf make
 rocm-core
 rocm-llvm make
 samurai make
+vim make

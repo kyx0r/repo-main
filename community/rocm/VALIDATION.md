@@ -13,7 +13,102 @@ LLVM/Clang 19. The system LLVM, live `/usr`, libc, loader configuration, GPU
 permissions, models, and existing Arch/glibc chroot were not modified.
 No gcompat or glibc runtime libraries are used by the tested executables.
 
-All compute packages used a single absolute validation prefix:
+## Fresh default-prefix build, archive installation and runtime: PASS
+
+A separate validation used the recipes at their real default prefix:
+
+```sh
+D=/root/.cache/rocm-kiss-default-validation
+# KISS_ROCM_PREFIX is unset; ROCm is /usr/lib/rocm, LLVM is /usr/lib/rocm/llvm.
+```
+
+All **24 packages completed actual native `kiss b`, archive creation and
+`kiss i` cycles** in `$D/build-root`, including a full LLVM build and normal
+KISS manifest/strip/dependency-fixup/tar packaging. This is a fresh build, not
+relocation of the earlier scratch-prefix artifacts or use of the LLVM
+packaging harness described below. The independent build root contains native
+musl/GCC/Python/build prerequisites and copied, checksum-verified cached
+sources; it has no system LLVM/Clang or prior ROCm payload. Builds run in
+private mount and network namespaces with no GPU access or network downloads.
+`KISS_ROOT`, cache, temporary paths and recipe snapshot are isolated;
+`KISS_ROCM_PREFIX`, `LD_LIBRARY_PATH` and `PYTHONPATH` are unset. The forced,
+explicitly ordered queue supplies dependencies through installs inside this
+disposable root, not the live system; it does not test automatic dependency
+build discovery. Inputs and bootstrap provenance are in `$D/recipes.json`
+and `$D/build-base.json`; cycle statuses and archive SHA256s are in
+`$D/build-root/work/build-stack.json` and its logs/status files.
+
+The fresh ROCR build exposed missing declared build prerequisites: upstream
+trap-header generation uses Bash and `xxd`. `rocm-runtime/depends` now declares
+`bash make` and `vim make` (Vim supplies `xxd`). The failed attempt and bootstrap
+supplements are preserved; the corrected actual recipe build passed.
+
+All six audits pass against only this build's snapshot, stages and archives,
+with no fallback to the old caches:
+
+* 24 recipes and 47 declared source entries pass; all 47 resolved source files
+  match `b3sum -l 33` checksums (the new cache holds independent copies).
+* 24 native KISS **packaged** stages and 24 archives each contain 5,673
+  non-directory paths, including KISS metadata, without ownership conflicts.
+  The 5,626 packaged-stage regular files match archive bytes and modes;
+  symlink targets and recipe metadata also agree.
+* All 47 union symlinks and 529 runtime NEEDED edges pass. The 127 host
+  executable/shared ELFs have clean musl interpreters, dependencies and RPATHs,
+  without GLIBC symbol versions or build/stage paths. All 75 AMDGPU objects
+  remain present. Tar safety and gzip integrity checks pass.
+
+All 24 SHA-pinned archives were then installed by actual `kiss i` into the
+**independent** `$D/archive-install-root`, bootstrapped from native runtime,
+GCC/compiler prerequisites and Python, not copied build-root ROCm payload,
+stages, the old prefix or system LLVM. Exact installed-archive verification
+passes for 5,625 regular files and 47 symlinks. The only exceptions are KISS's
+intentional omission of unmanifested `libnuma.la` and two `.bat` mode
+normalizations under umask 022. Bootstrap provenance is retained in
+`$D/archive-install-base.json`.
+
+The first runtime smoke failed because that independent bootstrap omitted
+native GCC 16.1 C++ headers (`cmath`), not because the packaged compiler was
+broken. The failed smoke and installer inputs are retained under
+`$D/before-runtime-cxx-headers`. Adding the 864 native, GCC-manifest-owned
+C++ header files, with hashes/modes recorded in the base provenance, fixed
+this disposable-root omission; the installer helper now includes them. LLVM
+was not rebuilt for this bootstrap correction.
+
+Installed-root runtime checks pass with the default prefix and no loader or
+architecture overrides: private Clang 19, the exhaustive host compiler-rt ABI
+regression, all nine packaged Python prerequisite imports, the explicit-`sh`
+fail-closed negative smoke, HIP add-one, HIPRTC/COMGR JIT plus module launch,
+checked 2x2 hipBLAS/rocBLAS SGEMM, and `strata-device --selftest` (allocation
+only). GPU runs select `HIP_VISIBLE_DEVICES=0` in a private mount/network
+namespace with read-only `/sys` and `/proc`, existing GPU nodes and private
+shared memory; host permissions and mounts are unchanged.
+
+The installed stripped Strata CLI also completed three independent raw-token
+model runs: France 128 tokens, arithmetic 64 and Python 64, **256 total**,
+using the same existing IQ3_XXS shards/pack/MTP/profile and conservative
+settings described below, mounted read-only. Inference is native musl; only
+CPU token encoding/decoding uses the unchanged reference chroot tokenizer.
+Exit status, prompt IDs, output ranges/counts, read-only mounts and unchanged
+asset metadata pass. France's first 16 IDs match the earlier baseline. The
+arithmetic sequence differs from the scratch-prefix run; no full-sequence
+reproducibility or glibc numerical/logit parity is claimed. Arithmetic initially
+says `three` before reasoning that it is incorrect; Python does not produce a
+function within 64 tokens. These are not answer-quality, native tokenizer,
+server, long-context or performance acceptance tests. Asset metadata checks
+are not a full content hash. The earlier 18 Strata kernel/parity PASS and
+1 SKIP below were **not rerun in this default-prefix build**.
+
+Evidence: `$D/{source-hash,stage,dependency,archive}-audit.json`,
+`$D/archive-{stage-elf,recipe}-comparison.json`,
+`$D/archive-install-result.json`, `$D/archive-root-smoke.{log,status}`,
+`$D/archive-root-models.{log,status}`, `$D/archive-root-models-decoded.json`
+and `$D/archive-model-{prompts,assets-before,assets-after}.json`.
+
+## Earlier scratch-prefix validation
+
+The following sections retain the earlier scratch-prefix evidence and
+provenance; `$s` refers only to that separate validation. The earlier compute
+packages used a single absolute validation prefix:
 
 ```sh
 s=/root/.cache/rocm-kiss-validation
@@ -25,11 +120,11 @@ Explicit RPATHs select the private libraries; GPU runs unset
 `HSA_OVERRIDE_GFX_VERSION` or other architecture-override workaround.
 
 **These scratch-prefix archives are validation artifacts, not distributable
-packages for the default `/usr/lib/rocm` prefix.** A default-prefix build and
-installation/runtime test remain outstanding. Do not mix prefixes or move
-these binaries and expect their embedded paths to relocate.
+packages for the default `/usr/lib/rocm` prefix.** The fresh default-prefix
+validation above does not make these earlier artifacts relocatable. Do not
+mix prefixes or move these binaries and expect their embedded paths to relocate.
 
-## Recipe and archive coverage
+## Scratch-prefix recipe and archive coverage
 
 The set contains 24 new recipes: numactl; rocm-cmake, rocm-core, rocm-llvm,
 rocm-device-libs, rocm-comgr, rocm-hipcc, rocm-runtime, rocm-hip, rocminfo;
@@ -89,7 +184,7 @@ rocBLAS deliberately has `nostrip`: the host GNU strip cannot process its
 AMDGPU `.hsaco` objects. Strata's stripped KISS binary was also exercised in
 real model generation, not just inspected.
 
-## Installed archives in an isolated musl root: PASS
+## Scratch-prefix installed archives in an isolated musl root: PASS
 
 All 24 audited archives were installed with actual `kiss i` into
 `$s/archive-install-root`, using `KISS_ROOT` rather than modifying the live
@@ -260,7 +355,6 @@ validation. Timing diagnostics are not benchmarks; no logits were compared.
 
 ## Remaining limitations
 
-* A complete default-prefix build and installation/runtime test.
 * Numerical comparison with the reference, native tokenizer/server integration,
   and sustained server/long-context testing.
   This recipe packages Strata's native CLI tools, not its Python server venv.

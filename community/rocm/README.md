@@ -11,6 +11,8 @@ meta-package. This is a source port, not AMD's glibc binary distribution; no
 Put this community directory first in KISS_PATH (retain your core/extra/xorg
 repositories). The new Python packages supply Tensile's build-time dependencies and HIP's
 profiling-header generator (not the optional profiler runtime).
+ROCR's trap-header generation also requires Bash and `xxd` (supplied by Vim);
+these are declared build-only dependencies of `rocm-runtime`.
 The dependency graph handles the order; a manual order for the compute stack is:
 
 1. numactl, rocm-cmake, rocm-core, rocm-llvm
@@ -117,6 +119,23 @@ Additional build/runtime findings and completed validation are recorded in
 `VALIDATION.md` next to these recipes (also installed under
 `/usr/share/doc/rocm`). Do not equate successful packaging with
 GPU/model validation on a different card or kernel.
+
+## Completed validation
+
+All 24 recipes completed fresh native KISS build/archive/install cycles at the
+default `/usr/lib/rocm` prefix in a disposable musl build root, without a prefix
+override or reuse of the earlier scratch-prefix artifacts. Six audits passed;
+all 24 archives were then installed by KISS into a separate native-musl root.
+Installed-root host compiler-rt ABI, nine Python imports, HIP, HIPRTC/COMGR and
+hipBLAS/rocBLAS GPU smokes passed on RX 7900 XTX (`gfx1100`). The installed
+Strata CLI generated 256 raw tokens across three read-only full-model runs.
+The earlier scratch-prefix Strata tests recorded 18 PASS and 1 SKIP; they
+were not rerun in the default-prefix build.
+
+See `VALIDATION.md` for archive provenance, retained failures and exact scope.
+This is not glibc numerical/logit parity, answer-quality, native tokenizer/server,
+long-context, other-GPU or performance validation. Scratch-prefix archives
+remain non-relocatable validation artifacts, separate from the fresh build.
 
 ## Runtime prerequisites and smoke tests
 
