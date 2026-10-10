@@ -1,5 +1,8 @@
 cmake make
 hipblas
+python
+python-jinja2
+python-regex
 rocblas
 rocm-hip
 samurai make

@@ -39,3 +39,10 @@ for bin in strata-plan strata-gguf strata-dequant strata-device; do
 done
 install -Dm644 LICENSE "$1/usr/share/licenses/strata/LICENSE"
 install -Dm644 README.md "$1/usr/share/doc/strata/README.md"
+
+# Bundle the upstream Python server and web UI with the CLI.
+mkdir -p "$1/usr/lib/strata/tools"
+cp -R serve "$1/usr/lib/strata/serve"
+install -Dm644 tools/strata_tokenizer.py "$1/usr/lib/strata/tools/strata_tokenizer.py"
+install -Dm755 strata-server "$1/usr/bin/strata-server"
+install -Dm644 requirements.txt "$1/usr/share/doc/strata/requirements-upstream.txt"
