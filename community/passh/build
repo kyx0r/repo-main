@@ -1,0 +1,4 @@
+#!/bin/sh -e
+
+make CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS"
+install -Dm755 passh "$1/usr/bin/passh"
