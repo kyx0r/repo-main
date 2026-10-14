@@ -1,4 +1,4 @@
-https://github.com/Niko1221/Strata/archive/a0116b2782a5b82622358c04a06496485d12b2d6.tar.gz
+https://github.com/Niko1221/Strata/archive/refs/tags/v0.1.44.1.tar.gz
 https://github.com/ggml-org/llama.cpp/archive/3cf03257f219afbe7334045ff7c6a06ac68c627d.tar.gz llama.cpp
 patches/rocm6-blas.patch
 patches/rocm6-q2-zero.patch

@@ -1,6 +1,6 @@
 --- a/src/kernels/cuda/iq_kernels.cu
 +++ b/src/kernels/cuda/iq_kernels.cu
-@@ -1708,10 +1708,10 @@
+@@ -1852,10 +1852,10 @@
      for (int j = 0; j < 8; ++j) {
          const int i = part * 8 + j;
          const int code = (x[b].qs[i / 4] >> ((i % 4) * 2)) & 3;
