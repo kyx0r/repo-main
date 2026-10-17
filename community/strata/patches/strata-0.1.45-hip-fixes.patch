@@ -1,0 +1,49 @@
+--- a/src/kernels/cuda/iq_kernels.cu
++++ b/src/kernels/cuda/iq_kernels.cu
+@@ -1853,7 +1853,7 @@
+                                                                             float* __restrict__ gate, float* __restrict__ up, int rb) {
+     const int ng = *n_groups;
+     if (blockIdx.y >= ng) return;
+-    __shared__ alignas(16) int4 s_u[ED_NC * 2 * ED_XB];
++    __shared__ int4 s_u[ED_NC * 2 * ED_XB] __attribute__((aligned(16)));
+     __shared__ float s_ds[ED_NC * ED_XB];
+     STRATA_SHARED_ALIGN16_U32(s_grid_buf, EdGrid<TG>::words);
+     const int tid = threadIdx.x;
+@@ -2040,7 +2040,7 @@
+     if (blockIdx.y >= ng) return;
+     constexpr int LANES = TD == 20 ? 8 : 16;
+     constexpr int RPP = (256 / LANES) * R;   // rows per pass
+-    __shared__ alignas(16) int4 s_u[ED_NC * 2 * ED_HB];
++    __shared__ int4 s_u[ED_NC * 2 * ED_HB] __attribute__((aligned(16)));
+     __shared__ float s_ds[ED_NC * ED_HB];
+     const int tid = threadIdx.x;
+     const int sw = tid / LANES, t = tid % LANES;
+--- a/src/prefill/gemm.cu
++++ b/src/prefill/gemm.cu
+@@ -140,6 +140,15 @@
+     }
+ }
+ 
++#if defined(__HIPCC__)
++void ck(hipblasStatus_t s, const char* what) {
++    if (s != HIPBLAS_STATUS_SUCCESS) {
++        std::fprintf(stderr, "prefill gemm: %s: cuBLAS status %d\n", what, (int) s);
++        std::exit(1);
++    }
++}
++#endif
++
+ // #247/#325: on Windows (seen on gfx1201), hipBLAS can return success with the correct BF16/FP16 product for some
+ // shapes (hc up once T >= 96, the router) and still leave hipErrorInvalidValue set, which the next kernel's error
+ // check turns into an exit. The multiply has finished, so that one stale error is cleared after a GEMM that succeeded;
+--- a/src/qwen35/q36_engine.cu
++++ b/src/qwen35/q36_engine.cu
+@@ -279,7 +279,7 @@
+     const int half = n_rot / 2;
+     if (i < n_rot) {
+         const int p = i < half ? i : i - half;
+-        const int rp = mtab ? __ldg(mtab + (size_t) pos * 3 + p % 3) : pos + dl;
++        const int rp = mtab ? mtab[(size_t) pos * 3 + p % 3] : pos + dl;
+         const float theta = (float) rp * powf(base, -2.0f * (float) p / (float) n_rot);
+         float sn, cs;
+         sincosf(theta, &sn, &cs);

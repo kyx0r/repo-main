@@ -6,7 +6,7 @@ export HIP_CLANG_PATH="$prefix/llvm/bin"
 export PATH="$prefix/llvm/bin:$prefix/bin:$PATH"
 
 patch -p1 < rocm6-blas.patch
-patch -p1 < rocm6-q2-zero.patch
+patch -p1 < strata-0.1.45-hip-fixes.patch
 
 archs=${KISS_ROCM_ARCHS:-gfx1100}
 cmake -B build -G Ninja \
