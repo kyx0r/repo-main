@@ -83,7 +83,7 @@ cmake -G Ninja -B build \
     -DUSE_LIBHYPHEN=OFF \
     -DUSE_LIBSECRET=OFF \
     -DUSE_WOFF2=OFF \
-    -DUSE_SKIA=OFF \
+    -DUSE_SKIA=ON \
     -DUSE_SKIA_OPENTYPE_SVG=OFF \
     -DUSE_SYSTEM_SYSPROF_CAPTURE=NO \
     -Wno-dev
