@@ -1,5 +1,4 @@
-https://github.com/ROCm/clr/archive/refs/tags/rocm-6.4.3.tar.gz
-https://github.com/ROCm/HIP/archive/refs/tags/rocm-6.4.3.tar.gz HIP
+https://github.com/ROCm/clr/archive/refs/tags/rocm-7.2.4.tar.gz
+https://github.com/ROCm/HIP/archive/refs/tags/rocm-7.2.4.tar.gz HIP
 patches/musl-stack.patch
-patches/musl-affinity.patch
 patches/musl-path.patch

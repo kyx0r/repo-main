@@ -1,6 +1,6 @@
 --- a/rocclr/os/os_posix.cpp
 +++ b/rocclr/os/os_posix.cpp
-@@ -731,10 +731,13 @@
+@@ -708,10 +708,13 @@
  void Os::getAppPathAndFileName(std::string& appName, std::string& appPathAndName) {
    std::unique_ptr<char[]> buff(new char[FILE_PATH_MAX_LENGTH]());
  
@@ -13,8 +13,8 @@
 +    // readlink does not append a NUL. Avoid GNU basename, which musl
 +    // does not expose in string.h, and preserve the complete path.
 +    appPathAndName.assign(buff.get(), static_cast<size_t>(length));
-+    const auto slash = appPathAndName.find_last_of('/');
++    const auto slash = appPathAndName.find_last_of("/");
 +    appName = appPathAndName.substr(slash == std::string::npos ? 0 : slash + 1);
-   }
-   else {
+   } else {
      appName = "";
+     appPathAndName = "";
