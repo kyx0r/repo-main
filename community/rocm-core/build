@@ -11,7 +11,7 @@ cmake -B build -G Ninja \
     -DCMAKE_INSTALL_LIBDIR=lib \
     -DCMAKE_PREFIX_PATH="$prefix;$prefix/llvm" \
     -DCMAKE_INSTALL_RPATH="$prefix/lib;$prefix/llvm/lib" \
-    -DROCM_VERSION=6.4.3 \
+    -DROCM_VERSION=7.2.4 \
     -DROCM_LIBPATCH_VERSION=0 \
     -DBUILD_SHARED_LIBS=ON \
     -DBUILD_ID=kiss
