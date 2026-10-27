@@ -1,3 +1,4 @@
-https://github.com/ROCm/rocBLAS/archive/refs/tags/rocm-6.4.3.tar.gz
-https://github.com/ROCm/Tensile/archive/be49885fce2a61b600ae4593f1c2d00c8b4fa11e.tar.gz tensile
-patches/optional-roctx.patch
+https://github.com/ROCm/rocBLAS/archive/refs/tags/rocm-7.2.4.tar.gz
+https://github.com/ROCm/Tensile/archive/1e7797f5b290e828c9ab5c7ce5d4ea3f050b37e3.tar.gz tensile
+patches/musl-nofs.patch
+patches/musl-systypes.patch

@@ -1,0 +1,10 @@
+--- a/library/src/include/rocblas_ostream.hpp
++++ b/library/src/include/rocblas_ostream.hpp
+@@ -51,6 +51,7 @@
+ #define STDOUT_FILENO _fileno(stdout)
+ #define STDERR_FILENO _fileno(stderr)
+ #else
++#include <sys/types.h>
+ #include <unistd.h>
+ #endif
+ 
