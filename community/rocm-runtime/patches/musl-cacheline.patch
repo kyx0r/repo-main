@@ -1,30 +1,26 @@
 --- a/runtime/hsa-runtime/core/util/utils.h
 +++ b/runtime/hsa-runtime/core/util/utils.h
-@@ -56,6 +56,9 @@
- #include <algorithm>
+@@ -59,6 +59,9 @@
  #include <sstream>
  #include <thread>
+ #include <locale>
 +#if defined(__i386__) || defined(__x86_64__)
 +#include <cpuid.h>
 +#endif
  
  namespace rocr {
  extern FILE* log_file;
-@@ -357,7 +360,17 @@
-   static long cacheline_size = 0;
- 
-   if (!cacheline_size) {
-+#if defined(_SC_LEVEL1_DCACHE_LINESIZE)
-     long sz = sysconf(_SC_LEVEL1_DCACHE_LINESIZE);
-+#else
-+    // musl omits the non-POSIX cache sysconf keys. CPUID leaf 1 gives
-+    // the CLFLUSH line size (in eight-byte units), which is the stride
-+    // needed by the instruction used below, not a guessed L1 size.
-+    unsigned int eax, ebx, ecx, edx;
-+    long sz = 0;
-+    if (__get_cpuid(1, &eax, &ebx, &ecx, &edx) && (edx & (1u << 19)))
-+      sz = ((ebx >> 8) & 0xff) * 8;
-+#endif
-     if (sz <= 0) return;
-     cacheline_size = sz;
-   }
+@@ -396,7 +399,13 @@
+   #ifdef _SC_LEVEL1_DCACHE_LINESIZE
+ 		sz = sysconf(_SC_LEVEL1_DCACHE_LINESIZE);
+   #else
++		// musl omits the non-POSIX cache sysconf keys. CPUID leaf 1 gives
++		// the CLFLUSH line size (in eight-byte units), which is the stride
++		// needed by the instruction used below, not a guessed L1 size.
++		unsigned int eax, ebx, ecx, edx;
+ 		sz = 0;
++		if (__get_cpuid(1, &eax, &ebx, &ecx, &edx) && (edx & (1u << 19)))
++		  sz = ((ebx >> 8) & 0xff) * 8;
+ #endif
+ #else
+     //@todo abstract GetLogicalProcessorInformation call

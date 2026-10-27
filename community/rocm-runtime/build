@@ -7,6 +7,7 @@ export PATH="$prefix/llvm/bin:$prefix/bin:$PATH"
 patch -p1 < musl-stack.patch
 patch -p1 < musl-cacheline.patch
 patch -p1 < headers.patch
+patch -p1 < musl-nullreturn.patch
 cmake -B build -G Ninja \
     -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
     -DCMAKE_BUILD_TYPE=Release \
