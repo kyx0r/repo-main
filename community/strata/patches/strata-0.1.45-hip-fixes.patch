@@ -18,24 +18,6 @@
      __shared__ float s_ds[ED_NC * ED_HB];
      const int tid = threadIdx.x;
      const int sw = tid / LANES, t = tid % LANES;
---- a/src/prefill/gemm.cu
-+++ b/src/prefill/gemm.cu
-@@ -140,6 +140,15 @@
-     }
- }
- 
-+#if defined(__HIPCC__)
-+void ck(hipblasStatus_t s, const char* what) {
-+    if (s != HIPBLAS_STATUS_SUCCESS) {
-+        std::fprintf(stderr, "prefill gemm: %s: cuBLAS status %d\n", what, (int) s);
-+        std::exit(1);
-+    }
-+}
-+#endif
-+
- // #247/#325: on Windows (seen on gfx1201), hipBLAS can return success with the correct BF16/FP16 product for some
- // shapes (hc up once T >= 96, the router) and still leave hipErrorInvalidValue set, which the next kernel's error
- // check turns into an exit. The multiply has finished, so that one stale error is cleared after a GEMM that succeeded;
 --- a/src/qwen35/q36_engine.cu
 +++ b/src/qwen35/q36_engine.cu
 @@ -279,7 +279,7 @@
