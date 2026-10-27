@@ -1,4 +1,4 @@
-# Validation record: ROCm 6.4.3 HIP compute and Strata on KISS/musl
+# Validation record: ROCm 7.2.4 HIP compute and Strata on KISS/musl
 
 ## Scope and environment
 

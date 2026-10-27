@@ -1,4 +1,4 @@
-# ROCm 6.4.3 and Strata on KISS/musl (x86_64)
+# ROCm 7.2.4 and Strata on KISS/musl (x86_64)
 
 These packages provide the HIP compute subset of ROCm: a private AMD LLVM,
 AMDGPU device bitcode, COMGR, the KFD/HSA runtime, HIP/hipcc, rocBLAS with
@@ -73,7 +73,7 @@ code objects. hipBLAS's optional rocSOLVER API and Fortran clients are disabled.
 OpenCL, MIOpen, RCCL, rocSOLVER, profiling tools, and a full ROCm SDK are outside
 this package set. COMGR's optional SPIR-V support is disabled.
 
-Sources are release archives for ROCm 6.4.3, not prebuilt binaries. The component
+Sources are release archives for ROCm 7.2.4, not prebuilt binaries. The component
 versions differ (e.g. AMD LLVM 19, rocBLAS 4.4.1, hipBLAS 2.4.0); their KISS
 versions identify the coherent ROCm release. Tensile is pinned to rocBLAS's
 `tensile_tag.txt` commit. Strata 0.1.40.3 is pinned to
