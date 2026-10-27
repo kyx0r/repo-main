@@ -67,23 +67,26 @@ consult the pinned Strata README and cmake/hip_backend.cmake. Its ordinary HIP
 backend assumes wave32 RDNA GPUs. The experimental `gfx906` path additionally
 requires `KISS_STRATA_GFX906=ON`; it is not enabled here or covered by RDNA3 tests.
 
-hipBLASLt is deliberately omitted (Strata supports falling back to hipBLAS).
+hipBLASLt is deliberately omitted; Strata's optional hipBLASLt lookup is
+disabled in its build and its hipBLAS path is used instead.
 Tensile is **not** disabled: rocBLAS includes real architecture-specific GEMM
 code objects. hipBLAS's optional rocSOLVER API and Fortran clients are disabled.
 OpenCL, MIOpen, RCCL, rocSOLVER, profiling tools, and a full ROCm SDK are outside
 this package set. COMGR's optional SPIR-V support is disabled.
 
 Sources are release archives for ROCm 7.2.4, not prebuilt binaries. The component
-versions differ (e.g. AMD LLVM 19, rocBLAS 4.4.1, hipBLAS 2.4.0); their KISS
-versions identify the coherent ROCm release. Tensile is pinned to rocBLAS's
-`tensile_tag.txt` commit. Strata 0.1.40.3 is pinned to
-`d5ea7133741e67743c0e886bb426c0ce8d69cf6c`; its native expert ggml sources are
-pinned to llama.cpp `3cf03257f219afbe7334045ff7c6a06ac68c627d`. Both are KISS
-sources, so Strata performs no FetchContent download at build time. The package
-installs `strata`, `strata-plan`, `strata-gguf`, `strata-dequant`, and
-`strata-device` to `/usr/bin`.
-It uses an AVX2 CPU baseline, not `-march=native`. Models must be supplied
-separately and are not downloaded by the package.
+versions differ (e.g. AMD LLVM 22.0.0, rocBLAS 5.2.0, hipBLAS 3.2.0); their KISS
+versions identify the coherent ROCm release. Tensile 4.45.0 is a separate
+pinned source tarball, commit `1e7797f5b290e828c9ab5c7ce5d4ea3f050b37e3`; the
+7.2.4 rocBLAS archive has no `tensile_tag.txt`. Strata 0.2.7 comes from release
+tag `v0.2.7`; its native expert ggml sources stay pinned to llama.cpp
+`3cf03257f219afbe7334045ff7c6a06ac68c627d`. Both are KISS sources, so Strata
+performs no FetchContent download at build time. The package installs `strata`,
+`strata-plan`, `strata-gguf`, `strata-dequant`, `strata-device` and
+`strata-server` to `/usr/bin`, and the upstream Python server tree (`serve`,
+`strata_control`, `strata_cli`, `tools`, `data`, `strata.py`) to
+`/usr/lib/strata`. It uses an AVX2 CPU baseline, not `-march=native`. Models
+must be supplied separately and are not downloaded by the package.
 
 ## musl changes
 
@@ -102,18 +105,32 @@ separately and are not downloaded by the package.
   `__cpu_mask`/word layout, and handles `/proc/self/exe` without GNU `basename`.
 * hipcc uses C++17's libstdc++ filesystem implementation instead of linking
   the obsolete `libstdc++fs.so`.
-* AMD device-library response files use CMP0053 NEW for CMake 4 compatibility.
+* rocBLAS drops the same obsolete `-lstdc++fs` link and includes
+  `<sys/types.h>` before `<unistd.h>` in its log-stream header.
+* The CMake-based recipes pass `-DCMAKE_POLICY_VERSION_MINIMUM=3.5` for
+  CMake 4 compatibility; the trees sampled here declare 3.6 and newer, so the
+  flag is precautionary, and `amd/device-libs` itself sets no policies.
 * HSA ELF headers include their integer types directly rather than relying on
   transitive C++ standard-library includes.
-* hipBLAS only enables the Fortran language when Fortran clients are requested.
+* The HSA loader returns `0` instead of `NULL` from an integer-valued
+  symbol lookup; musl defines `NULL` as `nullptr` in C++, which does not
+  convert.
+* hipBLAS 7.2.4 declares only CXX at project scope, so no Fortran-language
+  workaround is needed; Fortran clients are off via
+  `-DBUILD_FORTRAN_CLIENTS=OFF`.
 * rocBLAS makes ROCtx optional; these recipes disable it while retaining the
   real Tensile GEMM kernels. HIP's profiler-register runtime is also disabled;
   the CppHeaderParser-based profiling-header generation is still performed.
-* Strata uses the real `rocblas_handle` fallback for hipBLAS before version 3,
-  with an explicit rocBLAS link (not a handle cast or a fake workspace).
-* Strata's existing guarded Q2 signed-zero workaround also covers
-  `gfx1100` with HIP before version 7. The unmodified `hip_q2_zero` test
-  exposed 128/1024 mismatches before this change and passes afterward.
+* Strata's `rocm6-blas` patch keeps the real-`rocblas_handle` cuBLAS shim
+  gated on hipBLAS before version 3, with an explicit rocBLAS link (not a handle
+  cast or a fake workspace). The packaged hipBLAS is 3.2.0, so that branch is not
+  selected: `strata` uses hipBLAS 3's own cuBLAS-compatible API, and
+  `librocblas.so.5` is still linked for Strata's rocBLAS prefill path.
+* Strata's Q2 signed-zero workaround is ungated for HIP in 0.2.7: the
+  sign-preserving `__half` branch now applies to every AMDGPU target instead of a
+  growing architecture list. The unmodified `hip_q2_zero` test exposed 128/1024
+  mismatches on `gfx1100` at the older pin before the workaround reached that
+  path; no 0.2.7 rerun of that test is retained.
 
 Additional build/runtime findings and completed validation are recorded in
 `VALIDATION.md` next to these recipes (also installed under
@@ -129,8 +146,8 @@ all 24 archives were then installed by KISS into a separate native-musl root.
 Installed-root host compiler-rt ABI, nine Python imports, HIP, HIPRTC/COMGR and
 hipBLAS/rocBLAS GPU smokes passed on RX 7900 XTX (`gfx1100`). The installed
 Strata CLI generated 256 raw tokens across three read-only full-model runs.
-The earlier scratch-prefix Strata tests recorded 18 PASS and 1 SKIP; they
-were not rerun in the default-prefix build.
+The earlier scratch-prefix Strata tests recorded 18 PASS and 1 SKIP; they ran
+against the pre-0.2.7 pin and were not rerun in the default-prefix build.
 
 See `VALIDATION.md` for archive provenance, retained failures and exact scope.
 This is not glibc numerical/logit parity, answer-quality, native tokenizer/server,

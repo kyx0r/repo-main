@@ -9,13 +9,15 @@ no other-card, multi-GPU, glibc numerical-parity, or performance guarantee.
 
 The native validation host reports `x86_64-pc-linux-musl`, GCC 16.1.0,
 system Clang 22.1.8, CMake 4.4.3, and Python 3.14.7. ROCm uses its own AMD
-LLVM/Clang 19. The system LLVM, live `/usr`, libc, loader configuration, GPU
+LLVM/Clang 22.0.0. The system LLVM, live `/usr`, libc, loader configuration, GPU
 permissions, models, and existing Arch/glibc chroot were not modified.
 No gcompat or glibc runtime libraries are used by the tested executables.
 
 ## Fresh default-prefix build, archive installation and runtime: PASS
 
-A separate validation used the recipes at their real default prefix:
+The fresh default-prefix run and its evidence live in a separate root; that
+directory has since been pruned from this host, so the paths below name
+artifacts as they existed at validation time:
 
 ```sh
 D=/root/.cache/rocm-kiss-default-validation
@@ -47,7 +49,9 @@ All six audits pass against only this build's snapshot, stages and archives,
 with no fallback to the old caches:
 
 * 24 recipes and 47 declared source entries pass; all 47 resolved source files
-  match `b3sum -l 33` checksums (the new cache holds independent copies).
+  match `b3sum -l 33` checksums. The cache held independent copies at audit
+  time; on the current host the ten `numactl`/`python-*` entries are dangling
+  symlinks into a removed work directory.
 * 24 native KISS **packaged** stages and 24 archives each contain 5,673
   non-directory paths, including KISS metadata, without ownership conflicts.
   The 5,626 packaged-stage regular files match archive bytes and modes;
@@ -75,7 +79,7 @@ this disposable-root omission; the installer helper now includes them. LLVM
 was not rebuilt for this bootstrap correction.
 
 Installed-root runtime checks pass with the default prefix and no loader or
-architecture overrides: private Clang 19, the exhaustive host compiler-rt ABI
+architecture overrides: private Clang 22.0.0, the exhaustive host compiler-rt ABI
 regression, all nine packaged Python prerequisite imports, the explicit-`sh`
 fail-closed negative smoke, HIP add-one, HIPRTC/COMGR JIT plus module launch,
 checked 2x2 hipBLAS/rocBLAS SGEMM, and `strata-device --selftest` (allocation
@@ -96,7 +100,8 @@ says `three` before reasoning that it is incorrect; Python does not produce a
 function within 64 tokens. These are not answer-quality, native tokenizer,
 server, long-context or performance acceptance tests. Asset metadata checks
 are not a full content hash. The earlier 18 Strata kernel/parity PASS and
-1 SKIP below were **not rerun in this default-prefix build**.
+1 SKIP below were **not rerun in this default-prefix build**, and they predate
+the current Strata 0.2.7 recipe (they ran against the older commit pin).
 
 Evidence: `$D/{source-hash,stage,dependency,archive}-audit.json`,
 `$D/archive-{stage-elf,recipe}-comparison.json`,
@@ -108,7 +113,9 @@ and `$D/archive-model-{prompts,assets-before,assets-after}.json`.
 
 The following sections retain the earlier scratch-prefix evidence and
 provenance; `$s` refers only to that separate validation. The earlier compute
-packages used a single absolute validation prefix:
+packages used a single absolute validation prefix. `$s` has since been pruned
+from this host, so the paths named below identify artifacts as they existed
+during validation.
 
 ```sh
 s=/root/.cache/rocm-kiss-validation
@@ -271,17 +278,35 @@ The main HIP suite has 13 passes: `hip_prefill_gemm`,
 Five additional parity tests pass: `dequant_s2_parity`, `s2_gemv_parity`,
 `iq_multi_parity`, `native_grouped_parity`, and `shared_expert_parity`.
 The tests and their acceptance thresholds were not weakened.
-The initial `hip_q2_zero` failure is preserved in the initial-suite logs; the
-production kernel's existing signed-zero workaround was extended for
-`gfx1100`/HIP < 7 and the same test passes after rebuilding.
+The initial `hip_q2_zero` failure is preserved in the initial-suite logs: at
+that pin the recipe extended the production kernel's existing signed-zero
+workaround to `gfx1100`/HIP < 7 and the test passed after rebuilding. In the
+packaged 0.2.7 source that sign-preserving `__half` branch is upstream and
+ungated for HIP (`src/kernels/cuda/iq_kernels.cu`), so no local patch is
+carried for it; these runs were not repeated at 0.2.7.
 
 These results do not establish complete full-model numerical parity with a
 glibc build. Test drivers/logs are `$s/test-strata-hip.sh`,
 `$s/test-strata-extra.sh`, and `$s/strata-{hip,extra}-tests*.log`.
 
+They predate the current recipe: they were recorded against the then-current
+commit pin `d5ea7133741e67743c0e886bb426c0ce8d69cf6c`, not the packaged
+`v0.2.7`. Every name above is still a `hip_*` target in 0.2.7
+(`hip_prompt_attn_wmma` now builds from `src/kernels/qsa_prompt_attn_parity.cpp`
+and still runs on gfx11), but 0.2.7 also adds `hip_gdn_chunked*`,
+`hip_prefill_fused_iq*`, `hip_prefill_fused_moe`, `hip_prefill_rocblas_gemm`,
+`hip_prefill_mmq_parity`, `hip_prefill_gr_write_bench` and
+`hip_device_selftest`, while `hip_prefill_hipblaslt_gemm` is not configured here
+because hipBLASLt is not packaged. No 0.2.7 test run has been retained.
+
 ## Full-model CLI inference: PASS, staged and installed archive binaries
 
-Strata is pinned to `d5ea7133741e67743c0e886bb426c0ce8d69cf6c`, also the
+The CLI runs were made with the then-current Strata pin
+`d5ea7133741e67743c0e886bb426c0ce8d69cf6c`, also the commit in the user's
+known-good Arch/glibc Strata tree. The recipe now pins release tag `v0.2.7`; its
+native expert ggml source pin is unchanged at
+`3cf03257f219afbe7334045ff7c6a06ac68c627d`. These runs have not been repeated at
+`v0.2.7`.
 commit in the user's known-good Arch/glibc Strata tree. Its native expert ggml
 source is pinned to `3cf03257f219afbe7334045ff7c6a06ac68c627d`.
 
@@ -357,7 +382,9 @@ validation. Timing diagnostics are not benchmarks; no logits were compared.
 
 * Numerical comparison with the reference, native tokenizer/server integration,
   and sustained server/long-context testing.
-  This recipe packages Strata's native CLI tools, not its Python server venv.
+ This recipe packages Strata's native CLI tools and its upstream Python
+  server tree under `/usr/lib/strata` (started by `/usr/bin/strata-server`), but
+  no Python venv, so server dependencies are not vendored or resolved.
 * Other GPUs, multi-GPU operation, and meaningful performance measurement.
 * Full ROCm SDK, OpenCL, MIOpen, RCCL, rocSOLVER, hipBLASLt, profiler tools,
   and the optional profiler-register runtime are intentionally outside scope.
