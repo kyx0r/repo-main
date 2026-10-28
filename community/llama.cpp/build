@@ -2,11 +2,68 @@
 
 export DESTDIR="$1"
 
+# kiss's ROCm lives in $KISS_ROCM_PREFIX, not in the upstream default /opt/rocm.
+prefix=${KISS_ROCM_PREFIX:-/usr/lib/rocm}
+
+hipcc=$prefix/bin/hipcc
+hipblas_config=$prefix/lib/cmake/hipblas/hipblas-config.cmake
+
+# KISS_HIP=1 forces the HIP backend on, KISS_HIP=0 forces it off, and anything
+# else picks HIP when a usable ROCm install is in $prefix. A HIP build needs
+# the rocm packages, which are not in depends (this recipe also serves Vulkan
+# only hosts): kiss I(hipblas rocm-hip) pulls in everything required.
+case "$KISS_HIP" in
+	1)
+		[ -x "$hipcc" ] && [ -f "$hipblas_config" ] || {
+			echo "KISS_HIP=1 but $prefix has no hipcc/hipblas." >&2
+			echo "Install them first: kiss I(hipblas rocm-hip)" >&2
+			exit 1
+		}
+		hip=1
+	;;
+	0) hip=0 ;;
+	*)
+		hip=0
+		[ -x "$hipcc" ] && [ -f "$hipblas_config" ] && hip=1
+	;;
+esac
+
+if [ "$hip" = 1 ]; then
+	echo "ROCm/HIP detected in $prefix, building llama.cpp with HIP backend"
+
+	# hipcc and hipconfig do not find ROCm's own clang on their own.
+	export ROCM_PATH=$prefix HIP_PATH=$prefix HIP_PLATFORM=amd
+	export HIP_CLANG_PATH=$prefix/llvm/bin
+	export PATH=$prefix/llvm/bin:$prefix/bin:$PATH
+
+	arch=${KISS_ROCM_ARCHS:-gfx1100}
+
+	cmake -B build \
+		-DGGML_HIP=ON \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_PREFIX_PATH="$prefix;$prefix/llvm" \
+		-DCMAKE_HIP_COMPILER="$prefix/llvm/bin/clang++" \
+		-DCMAKE_HIP_COMPILER_ROCM_ROOT="$prefix" \
+		-DCMAKE_HIP_ARCHITECTURES="$arch" \
+		-DCMAKE_INSTALL_RPATH="$prefix/lib;$prefix/llvm/lib" \
+		-DCMAKE_BUILD_WITH_INSTALL_RPATH=ON
+
+	cmake --build build
+	cmake --install build
+	exit 0
+fi
+
+if [ "$KISS_HIP" = 0 ]; then
+	echo "KISS_HIP=0, building llama.cpp with Vulkan backend"
+else
+	echo "No usable ROCm/HIP install in $prefix, building llama.cpp with Vulkan backend"
+fi
+
 cmake -B build \
-        -DGGML_VULKAN=ON \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_INSTALL_PREFIX='/usr'
+	-DGGML_VULKAN=ON \
+	-DCMAKE_BUILD_TYPE=Release \
+	-DCMAKE_INSTALL_PREFIX=/usr
 
 cmake --build build
 cmake --install build
-
