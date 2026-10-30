@@ -14,11 +14,11 @@ hipblas_config=$prefix/lib/cmake/hipblas/hipblas-config.cmake
 # only hosts): kiss I(hipblas rocm-hip) pulls in everything required.
 case "$KISS_HIP" in
 	1)
-		[ -x "$hipcc" ] && [ -f "$hipblas_config" ] || {
+		if ! [ -x "$hipcc" ] || ! [ -f "$hipblas_config" ]; then
 			echo "KISS_HIP=1 but $prefix has no hipcc/hipblas." >&2
 			echo "Install them first: kiss I(hipblas rocm-hip)" >&2
 			exit 1
-		}
+		fi
 		hip=1
 	;;
 	0) hip=0 ;;
@@ -32,9 +32,9 @@ if [ "$hip" = 1 ]; then
 	echo "ROCm/HIP detected in $prefix, building llama.cpp with HIP backend"
 
 	# hipcc and hipconfig do not find ROCm's own clang on their own.
-	export ROCM_PATH=$prefix HIP_PATH=$prefix HIP_PLATFORM=amd
-	export HIP_CLANG_PATH=$prefix/llvm/bin
-	export PATH=$prefix/llvm/bin:$prefix/bin:$PATH
+	export ROCM_PATH="$prefix" HIP_PATH="$prefix" HIP_PLATFORM=amd
+	export HIP_CLANG_PATH="$prefix"/llvm/bin
+	export PATH="$prefix"/llvm/bin:"$prefix"/bin:"$PATH"
 
 	arch=${KISS_ROCM_ARCHS:-gfx1100}
 
