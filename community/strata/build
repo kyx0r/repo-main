@@ -7,6 +7,7 @@ export PATH="$prefix/llvm/bin:$prefix/bin:$PATH"
 
 patch -p1 < rocm6-blas.patch
 patch -p1 < strata-0.1.45-hip-fixes.patch
+patch -p1 < musl-execinfo.patch
 
 archs=${KISS_ROCM_ARCHS:-gfx1100}
 cmake -B build -G Ninja \

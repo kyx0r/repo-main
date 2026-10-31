@@ -1,5 +1,6 @@
-https://github.com/Niko1221/Strata/archive/refs/tags/v0.2.8.tar.gz
+https://github.com/Niko1221/Strata/archive/refs/tags/v0.2.9.tar.gz
 https://github.com/ggml-org/llama.cpp/archive/3cf03257f219afbe7334045ff7c6a06ac68c627d.tar.gz llama.cpp
 patches/rocm6-blas.patch
 patches/strata-0.1.45-hip-fixes.patch
+patches/musl-execinfo.patch
 strata-server
