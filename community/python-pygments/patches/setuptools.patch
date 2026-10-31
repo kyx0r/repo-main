@@ -2,7 +2,7 @@
 +++ b/pyproject.toml
 @@ -1,6 +1,6 @@
  [build-system]
--requires = ["hatchling"]
+-requires = ["hatchling>=1.27"]
 -build-backend = "hatchling.build"
 +requires = ["setuptools", "wheel"]
 +build-backend = "setuptools.build_meta"
