@@ -1,0 +1,5 @@
+https://gitlab.com/agentionai-group/strata/-/archive/2700ac43cbe67fc7756a56d876dd03f2af4a3160/strata-2700ac43cbe67fc7756a56d876dd03f2af4a3160.tar.gz
+https://gitlab.com/agentionai-group/llama.cpp/-/archive/9aa51ce4fdd3435a91531ffe16a17414ccc6dc6f/llama.cpp-9aa51ce4fdd3435a91531ffe16a17414ccc6dc6f.tar.gz llama.cpp
+patches/rocm6-blas.patch
+patches/strata-0.1.45-hip-fixes.patch
+strata-server
