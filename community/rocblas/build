@@ -10,6 +10,13 @@ patch -p1 < musl-systypes.patch
 
 # A semicolon-separated list; use the same targets when building Strata.
 archs=${KISS_ROCM_ARCHS:-gfx1100}
+
+# hipBLASLt is optional (not in depends): build against it when installed.
+# Consumers such as llama.cpp's HIP backend reach it only through rocBLAS.
+hipblaslt=OFF
+kiss list hipblaslt >/dev/null 2>&1 && hipblaslt=ON
+echo "rocblas: BUILD_WITH_HIPBLASLT=$hipblaslt"
+
 cmake -B build -G Ninja \
     -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
     -DCMAKE_BUILD_TYPE=Release \
@@ -23,7 +30,7 @@ cmake -B build -G Ninja \
     -DGPU_TARGETS="$archs" \
     -DBUILD_WITH_TENSILE=ON \
     -DBUILD_WITH_PIP=OFF \
-    -DBUILD_WITH_HIPBLASLT=OFF \
+    -DBUILD_WITH_HIPBLASLT="$hipblaslt" \
     -DROCBLAS_ENABLE_ROCTX=OFF \
     -DCMAKE_CXX_STANDARD=17 \
     -DBUILD_CLIENTS_TESTS=OFF \
