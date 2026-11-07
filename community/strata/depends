@@ -1,5 +1,6 @@
 cmake make
 hipblas
+hipblaslt
 python
 python-jinja2
 python-regex

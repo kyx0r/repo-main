@@ -1,0 +1,4 @@
+https://github.com/ROCm/rocm-libraries/archive/refs/tags/rocm-7.2.4.tar.gz
+https://github.com/wjakob/nanobind/archive/9b3afa9dbdc23641daf26fadef7743e7127ff92f.tar.gz nanobind
+https://github.com/Tessil/robin-map/archive/188c45569cc2a5dd768077c193830b51d33a5020.tar.gz nanobind/ext/robin_map
+patches/no-rocm-smi.patch

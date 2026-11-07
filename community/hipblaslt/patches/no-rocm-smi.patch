@@ -1,0 +1,17 @@
+--- a/projects/hipblaslt/tensilelite/Tensile/Common/GlobalParameters.py
++++ b/projects/hipblaslt/tensilelite/Tensile/Common/GlobalParameters.py
+@@ -561,11 +561,9 @@
+     try:
+         globalParameters["ROCmSMIPath"] = locateExe(globalParameters["ROCmBinPath"], "rocm-smi")
+     except OSError:
+-        if os.name == "nt":
+-            # rocm-smi is not presently supported on Windows so do not require it.
+-            pass
+-        else:
+-            raise
++        # rocm-smi only pins clocks for the benchmark client; generating the
++        # device libraries never runs it, so a build without it is fine.
++        pass
+ 
+     if "AsanBuild" in config:
+         globalParameters["AsanBuild"] = config["AsanBuild"]

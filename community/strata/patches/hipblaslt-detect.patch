@@ -1,8 +1,6 @@
-diff --git a/cmake/hip_backend.cmake b/cmake/hip_backend.cmake
-index 966fa21d..e161293f 100644
 --- a/cmake/hip_backend.cmake
 +++ b/cmake/hip_backend.cmake
-@@ -79,7 +79,11 @@ if(TARGET roc::hipblaslt)
+@@ -79,7 +79,11 @@
    set(STRATA_HIPBLASLT_AVAILABLE ON)
  else()
    set(STRATA_HIPBLASLT_AVAILABLE OFF)
@@ -15,11 +13,9 @@ index 966fa21d..e161293f 100644
  endif()
  if(TARGET roc::rocblas)
    set(STRATA_ROCBLAS_AVAILABLE ON)
-diff --git a/setup.py b/setup.py
-index cf801d3e..5432fcb6 100644
 --- a/setup.py
 +++ b/setup.py
-@@ -5110,18 +5110,39 @@ def rocm_dev_missing(sysroot: Path) -> list:
+@@ -5110,18 +5110,39 @@
      return [name for name, paths in need.items() if not any(p.is_file() for p in paths)]
  
  
@@ -63,7 +59,7 @@ index cf801d3e..5432fcb6 100644
              warn(f"the ROCm in {sysroot} is {ver[0]}.{ver[1]}; Strata needs {ROCM_SYSTEM_MIN[0]}.{ROCM_SYSTEM_MIN[1]} "
                   "or newer: using AMD's wheels in .venv instead")
          else:                                          # #446: a runtime-only ROCm (no -dev packages): cmake would fail
-@@ -6220,10 +6241,29 @@ def fresh_if_other_generator(bdir: Path, generator: str = "Ninja") -> bool:
+@@ -6220,10 +6241,29 @@
      return True
  
  
@@ -93,30 +89,43 @@ index cf801d3e..5432fcb6 100644
      conf = [cmake, "-G", "Ninja", f"-DCMAKE_MAKE_PROGRAM={ninja}", "-S", str(src), "-B", str(bdir),
              "-DCMAKE_BUILD_TYPE=Release", *defs]
      build = [cmake, "--build", str(bdir), "--target", target, "-j", str(max(2, (os.cpu_count() or 4) // 2))]
-diff --git a/src/prefill/gemm.cu b/src/prefill/gemm.cu
-index ebc558f5..8e32675a 100644
 --- a/src/prefill/gemm.cu
 +++ b/src/prefill/gemm.cu
-@@ -670,6 +670,18 @@ Gemm::~Gemm() {
+@@ -670,6 +670,33 @@
      }
  }
  
 +#if defined(__HIPCC__) && !defined(STRATA_HIPBLASLT_AVAILABLE)
-+// A build without hipBLASLt (cmake/hip_backend.cmake found none) ignores the launcher's solution table: say so once.
-+// Silent, it cost Gyro-L on two 7900 XTX 1.7x on prompts (903 against 1,534 tok/s, 6,345 tokens, v0.1.58).
++#include <hip/hip_runtime_api.h>
++#include <string>
++// A build without hipBLASLt (cmake/hip_backend.cmake found none) runs the prompt's dense GEMMs on plain hipBLAS: say
++// so once.  Silent, it cost Gyro-L on two 7900 XTX 1.7x on prompts (903 against 1,534 tok/s, 6,345 tokens, v0.1.58).
++// Not only when STRATA_HIPBLASLT_TUNING is set: the launcher sets it only for a hipBLASLt it found, so a ROCm with no
++// hipBLASLt at all never had it set.  The cards hipBLASLt serves (gfx90a, gfx94x/95x, RDNA3/3.5/4) are told always;
++// gfx103x and older have no hipBLASLt and use the rocBLAS table instead.
 +static void warn_no_hipblaslt() {
 +    static std::atomic<bool> told{false};
++    if (told.load()) return;
 +    const char* t = std::getenv("STRATA_HIPBLASLT_TUNING");
-+    if (t && *t && !told.exchange(true))
-+        std::fprintf(stderr, "prefill gemm: STRATA_HIPBLASLT_TUNING is set but this engine was built without hipBLASLt: "
-+                             "the table is ignored and prompts use plain hipBLAS (rebuild against a ROCm with hipBLASLt)\n");
++    const bool table = t && *t;
++    std::string arch;
++    int dev = 0;
++    hipDeviceProp_t prop{};
++    if (hipGetDevice(&dev) == hipSuccess && hipGetDeviceProperties(&prop, dev) == hipSuccess) arch = prop.gcnArchName;
++    if (const auto c = arch.find(':'); c != std::string::npos) arch.resize(c);
++    const auto is = [&](const char* p) { return arch.rfind(p, 0) == 0; };
++    const bool lt_card = is("gfx11") || is("gfx12") || is("gfx94") || is("gfx95") || is("gfx90a");
++    if (!(table || lt_card) || told.exchange(true)) return;
++    std::fprintf(stderr, "prefill gemm: this engine was built without hipBLASLt%s: prompts on this card (%s) use plain "
++                         "hipBLAS, up to ~1.7x slower (rebuild against a ROCm with hipBLASLt)\n",
++                 table ? " (STRATA_HIPBLASLT_TUNING is ignored)" : "", arch.empty() ? "?" : arch.c_str());
 +}
 +#endif
 +
  bool Gemm::init_external(void* stream, uint16_t* scratch, int64_t scratch_elems, void* workspace, size_t ws_bytes,
                           std::string& err) {
      cublasHandle_t h = nullptr;
-@@ -688,6 +700,8 @@ bool Gemm::init_external(void* stream, uint16_t* scratch, int64_t scratch_elems,
+@@ -688,6 +715,8 @@
      scratch_elems_ = scratch_elems;
  #if defined(__HIPCC__) && defined(STRATA_HIPBLASLT_AVAILABLE)
      hipblaslt_state_ = create_hipblaslt_state(workspace_, ws_bytes).release();
@@ -125,7 +134,7 @@ index ebc558f5..8e32675a 100644
  #endif
  #if defined(__HIPCC__) && defined(STRATA_ROCBLAS_AVAILABLE)
      rocblas_state_ = create_rocblas_state(stream).release();
-@@ -761,6 +775,8 @@ bool Gemm::init(void* stream, int64_t scratch_elems, std::string& err) {
+@@ -761,6 +790,8 @@
      note(cublasSetMathMode(h, CUBLAS_DEFAULT_MATH), "cublasSetMathMode");
  #if defined(__HIPCC__) && defined(STRATA_HIPBLASLT_AVAILABLE)
      hipblaslt_state_ = create_hipblaslt_state(workspace_, ws).release();

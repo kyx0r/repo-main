@@ -1,0 +1,14 @@
+#!/bin/sh -e
+
+# Header-only C++ msgpack (hipBLASLt's solution-library parser). No Boost:
+# the exported target then carries MSGPACK_NO_BOOST for its users.
+cmake -B build -G Ninja \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DCMAKE_INSTALL_LIBDIR=lib \
+    -DMSGPACK_USE_BOOST=OFF \
+    -DMSGPACK_BUILD_DOCS=OFF \
+    -DMSGPACK_BUILD_TESTS=OFF \
+    -DMSGPACK_BUILD_EXAMPLES=OFF
+cmake --build build
+DESTDIR="$1" cmake --install build

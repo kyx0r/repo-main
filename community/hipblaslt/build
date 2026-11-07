@@ -1,0 +1,38 @@
+#!/bin/sh -e
+
+prefix=${KISS_ROCM_PREFIX:-/usr/lib/rocm}
+export ROCM_PATH="$prefix" HIP_PATH="$prefix" HIP_PLATFORM=amd
+export HIP_CLANG_PATH="$prefix/llvm/bin"
+export PATH="$prefix/llvm/bin:$prefix/bin:$PATH"
+
+# Source is the rocm-libraries monorepo (needs shared/origami). nanobind
+# comes from sources (offline). TensileCreateLibrary wants rocm-smi: patched.
+patch -p1 < no-rocm-smi.patch
+
+archs=${KISS_ROCM_ARCHS:-gfx1100}
+cmake -S projects/hipblaslt -B build -G Ninja \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX="$prefix" \
+    -DCMAKE_INSTALL_LIBDIR=lib \
+    -DCMAKE_PREFIX_PATH="$prefix;$prefix/llvm" \
+    -DCMAKE_INSTALL_RPATH="$prefix/lib;$prefix/llvm/lib" \
+    -DCMAKE_C_COMPILER="$prefix/llvm/bin/clang" \
+    -DCMAKE_CXX_COMPILER="$prefix/llvm/bin/clang++" \
+    -DGPU_TARGETS="$archs" \
+    -DHIPBLASLT_ENABLE_CLIENT=OFF \
+    -DHIPBLASLT_BUILD_TESTING=OFF \
+    -DHIPBLASLT_ENABLE_SAMPLES=OFF \
+    -DHIPBLASLT_ENABLE_ROCROLLER=OFF \
+    -DHIPBLASLT_ENABLE_MARKER=OFF \
+    -DHIPBLASLT_ENABLE_OPENMP=OFF \
+    -DHIPBLASLT_ENABLE_ROCM_SMI=OFF \
+    -DHIPBLASLT_ENABLE_FETCH=OFF \
+    -DHIPBLASLT_BUNDLE_PYTHON_DEPS=ON \
+    -DBUILD_TESTING=OFF \
+    -DFETCHCONTENT_FULLY_DISCONNECTED=ON \
+    -DFETCHCONTENT_SOURCE_DIR_NANOBIND="$PWD/nanobind" \
+    -DPython3_EXECUTABLE=/usr/bin/python3 \
+    -DPython_EXECUTABLE=/usr/bin/python3 \
+    -DTENSILELITE_BUILD_PARALLEL_LEVEL="${KISS_ROCM_TENSILE_JOBS:-8}"
+cmake --build build
+DESTDIR="$1" cmake --install build
