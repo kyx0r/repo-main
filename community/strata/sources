@@ -3,4 +3,6 @@ https://github.com/ggml-org/llama.cpp/archive/3cf03257f219afbe7334045ff7c6a06ac6
 patches/rocm6-blas.patch
 patches/strata-0.1.45-hip-fixes.patch
 patches/musl-execinfo.patch
+patches/done-line-prompt-speed.patch
+patches/hipblaslt-detect.patch
 strata-server

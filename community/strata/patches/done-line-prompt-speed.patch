@@ -1,0 +1,18 @@
+diff --git a/serve/server.py b/serve/server.py
+index b5eed400..443e5f38 100644
+--- a/serve/server.py
++++ b/serve/server.py
+@@ -6694,7 +6694,12 @@ class Service:
+                             if hit_msg and pcie_share:
+                                 hit_msg += f" (+{pcie_share*100:.1f}% of the routed experts over PCIe)"
+                             rate_txt = f"{rate:.1f} tok/s" if rate is not None else "no speed"
+-                            print(f"[strata] done: {n} tokens in {el:.0f} s ({rate_txt}) "
++                            # the prompt's reading speed beside the answer's (the engine log has the same numbers in
++                            # its "strata serve: prompt" line): only the tokens read, a cached prefix is not counted
++                            pp = (timings or {}).get("prompt_per_second")
++                            pp_txt = (f"; prompt {timings['prompt_n']:,} tokens read at {pp:,.1f} tok/s"
++                                      + (f", {timings['cache_n']:,} cached" if timings.get("cache_n") else "")) if pp else ""
++                            print(f"[strata] done: {n} tokens in {el:.0f} s ({rate_txt}{pp_txt}) "
+                                   f"({finish}, cancel={cancel.is_set()}){hit_msg}", flush=True)
+                             if finish == "length" and parser.state in ("reasoning", "rcall"):   # #530
+                                 print("[strata] the reply reached max tokens while still thinking, so it has no "

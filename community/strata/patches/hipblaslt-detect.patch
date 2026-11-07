@@ -1,0 +1,136 @@
+diff --git a/cmake/hip_backend.cmake b/cmake/hip_backend.cmake
+index 966fa21d..e161293f 100644
+--- a/cmake/hip_backend.cmake
++++ b/cmake/hip_backend.cmake
+@@ -79,7 +79,11 @@ if(TARGET roc::hipblaslt)
+   set(STRATA_HIPBLASLT_AVAILABLE ON)
+ else()
+   set(STRATA_HIPBLASLT_AVAILABLE OFF)
+-  message(STATUS "Strata: hipBLASLt not found; solution-table dispatch is unavailable")
++  # a WARNING, not a STATUS line: without hipBLASLt the prompt's dense GEMMs run on plain hipBLAS, ~1.7x slower
++  # prompts on gfx1100 (Gyro-L, two 7900 XTX: 903 against 1,534 tok/s), and STRATA_HIPBLASLT_TUNING is ignored
++  message(WARNING "Strata: hipBLASLt not found (no hipblaslt CMake package under CMAKE_PREFIX_PATH); the prompt path's "
++                  "hipBLASLt solution-table dispatch is compiled out and prompts read slower. Install hipBLASLt "
++                  "for this ROCm or configure against one that has it.")
+ endif()
+ if(TARGET roc::rocblas)
+   set(STRATA_ROCBLAS_AVAILABLE ON)
+diff --git a/setup.py b/setup.py
+index cf801d3e..5432fcb6 100644
+--- a/setup.py
++++ b/setup.py
+@@ -5110,18 +5110,39 @@ def rocm_dev_missing(sysroot: Path) -> list:
+     return [name for name, paths in need.items() if not any(p.is_file() for p in paths)]
+ 
+ 
++def rocm_hipblaslt_missing(sysroot: Path) -> bool:
++    """A system ROCm without hipBLASLt (its library or its CMake package): cmake/hip_backend.cmake then compiles the
++    prompt path's solution-table dispatch out, STRATA_HIPBLASLT_TUNING has nothing to act on and the prompt's dense
++    matrix products run on plain hipBLAS.  Gyro-L on two 7900 XTX read a 6,345-token prompt at 903 tok/s that way
++    against 1,534 with hipBLASLt and the gfx1100 table (v0.1.58)."""
++    dirs = [sysroot / d for d in ("lib", "lib64")]
++    lib = any(list(d.glob("libhipblaslt.so*")) for d in dirs)
++    pkg = any((d / "cmake" / "hipblaslt" / "hipblaslt-config.cmake").is_file() for d in dirs)
++    return not (lib and pkg)
++
++
+ def rocm_root(archs):
+     """ROCm for compiling and running the HIP engine for `archs` (one arch or a list: the cards of a layer split):
+-    (root, library folders).  A system ROCm 7 with hipcc, hipBLAS and the HIP development files (#446), else AMD's
+-    TheRock wheels (rocm_wanted: a version per card family, from the family's index) installed into .venv."""
++    (root, library folders).  A system ROCm 7 with hipcc, hipBLAS, hipBLASLt and the HIP development files (#446),
++    else AMD's TheRock wheels (rocm_wanted: a version per card family, from the family's index) installed into .venv.
++    STRATA_ROCM_SYSTEM=1 keeps a system ROCm that has no hipBLASLt (slower prompts, no download)."""
+     archs = [archs] if isinstance(archs, str) else list(archs)
+     sysroot = Path(os.environ.get("ROCM_PATH") or "/opt/rocm")
+     if (sysroot / "bin" / "hipcc").exists() and list((sysroot / "lib").glob("libhipblas.so*")):
+         ver = rocm_version(sysroot)
+         missing = rocm_dev_missing(sysroot)
+         if (ver is None or ver >= ROCM_SYSTEM_MIN) and not missing:
+-            return sysroot, [str(sysroot / "lib")]
+-        if ver is not None and ver < ROCM_SYSTEM_MIN:
++            no_lt = rocm_hipblaslt_missing(sysroot)
++            two_families = len({rocm_index(a) for a in archs}) > 1    # the wheels hold one family: the system ROCm as it is
++            if not no_lt or os.environ.get("STRATA_ROCM_SYSTEM") == "1" or two_families:
++                if no_lt:
++                    warn(f"the ROCm in {sysroot} has no hipBLASLt: prompts are read with plain hipBLAS (up to ~1.7x "
++                         "slower); install hipblaslt-dev for your ROCm to read them faster")
++                return sysroot, [str(sysroot / "lib")]
++            warn(f"the ROCm in {sysroot} has no hipBLASLt (libhipblaslt and its CMake package): the engine would read "
++                 "prompts with plain hipBLAS, up to ~1.7x slower; using AMD's wheels in .venv instead (or install "
++                 "hipblaslt-dev for your ROCm; STRATA_ROCM_SYSTEM=1 keeps this ROCm as it is)")
++        elif ver is not None and ver < ROCM_SYSTEM_MIN:
+             warn(f"the ROCm in {sysroot} is {ver[0]}.{ver[1]}; Strata needs {ROCM_SYSTEM_MIN[0]}.{ROCM_SYSTEM_MIN[1]} "
+                  "or newer: using AMD's wheels in .venv instead")
+         else:                                          # #446: a runtime-only ROCm (no -dev packages): cmake would fail
+@@ -6220,10 +6241,29 @@ def fresh_if_other_generator(bdir: Path, generator: str = "Ninja") -> bool:
+     return True
+ 
+ 
++def fresh_if_other_hip_compiler(bdir: Path, defs) -> bool:
++    """A build folder configured with another ROCm's HIP compiler (a system ROCm without hipBLASLt, now AMD's wheels:
++    rocm_root) keeps that ROCm's package folders in its cache, hipblaslt_DIR-NOTFOUND among them.  It is configured
++    afresh, as for another generator.  True when it did."""
++    want = next((d.split("=", 1)[1] for d in defs if d.startswith("-DCMAKE_HIP_COMPILER=")), None)
++    try:
++        cache = (Path(bdir) / "CMakeCache.txt").read_text(encoding="utf-8", errors="replace")
++    except OSError:
++        return False
++    m = re.search(r"^CMAKE_HIP_COMPILER:[A-Z]+=(.*)$", cache, re.M)
++    if want is None or m is None or Path(m.group(1).strip()) == Path(want):
++        return False
++    say(f"  {Path(bdir).name}/ was configured with another ROCm ({m.group(1).strip()}), so it is configured again")
++    (Path(bdir) / "CMakeCache.txt").unlink(missing_ok=True)
++    shutil.rmtree(Path(bdir) / "CMakeFiles", ignore_errors=True)
++    return True
++
++
+ def cmake_build(src, bdir, target, defs, vcvars, bat_name):
+     acquisition.require("a compile (cmake)")
+     cmake, ninja = ensure_build_tools()
+     fresh_if_other_generator(bdir)
++    fresh_if_other_hip_compiler(bdir, defs)
+     conf = [cmake, "-G", "Ninja", f"-DCMAKE_MAKE_PROGRAM={ninja}", "-S", str(src), "-B", str(bdir),
+             "-DCMAKE_BUILD_TYPE=Release", *defs]
+     build = [cmake, "--build", str(bdir), "--target", target, "-j", str(max(2, (os.cpu_count() or 4) // 2))]
+diff --git a/src/prefill/gemm.cu b/src/prefill/gemm.cu
+index ebc558f5..8e32675a 100644
+--- a/src/prefill/gemm.cu
++++ b/src/prefill/gemm.cu
+@@ -670,6 +670,18 @@ Gemm::~Gemm() {
+     }
+ }
+ 
++#if defined(__HIPCC__) && !defined(STRATA_HIPBLASLT_AVAILABLE)
++// A build without hipBLASLt (cmake/hip_backend.cmake found none) ignores the launcher's solution table: say so once.
++// Silent, it cost Gyro-L on two 7900 XTX 1.7x on prompts (903 against 1,534 tok/s, 6,345 tokens, v0.1.58).
++static void warn_no_hipblaslt() {
++    static std::atomic<bool> told{false};
++    const char* t = std::getenv("STRATA_HIPBLASLT_TUNING");
++    if (t && *t && !told.exchange(true))
++        std::fprintf(stderr, "prefill gemm: STRATA_HIPBLASLT_TUNING is set but this engine was built without hipBLASLt: "
++                             "the table is ignored and prompts use plain hipBLAS (rebuild against a ROCm with hipBLASLt)\n");
++}
++#endif
++
+ bool Gemm::init_external(void* stream, uint16_t* scratch, int64_t scratch_elems, void* workspace, size_t ws_bytes,
+                          std::string& err) {
+     cublasHandle_t h = nullptr;
+@@ -688,6 +700,8 @@ bool Gemm::init_external(void* stream, uint16_t* scratch, int64_t scratch_elems,
+     scratch_elems_ = scratch_elems;
+ #if defined(__HIPCC__) && defined(STRATA_HIPBLASLT_AVAILABLE)
+     hipblaslt_state_ = create_hipblaslt_state(workspace_, ws_bytes).release();
++#elif defined(__HIPCC__)
++    warn_no_hipblaslt();
+ #endif
+ #if defined(__HIPCC__) && defined(STRATA_ROCBLAS_AVAILABLE)
+     rocblas_state_ = create_rocblas_state(stream).release();
+@@ -761,6 +775,8 @@ bool Gemm::init(void* stream, int64_t scratch_elems, std::string& err) {
+     note(cublasSetMathMode(h, CUBLAS_DEFAULT_MATH), "cublasSetMathMode");
+ #if defined(__HIPCC__) && defined(STRATA_HIPBLASLT_AVAILABLE)
+     hipblaslt_state_ = create_hipblaslt_state(workspace_, ws).release();
++#elif defined(__HIPCC__)
++    warn_no_hipblaslt();
+ #endif
+ #if defined(__HIPCC__) && defined(STRATA_ROCBLAS_AVAILABLE)
+     rocblas_state_ = create_rocblas_state(stream).release();
