@@ -10,7 +10,8 @@ patch -p1 < musl-execinfo.patch
 patch -p1 < done-line-prompt-speed.patch
 
 archs=${KISS_ROCM_ARCHS:-gfx1100}
-cmake -B build -G Ninja \
+# 0.2.16 split the repo: the CMake engine is engine/, the Python app (serve, strata_cli, strata_control, tools, data) is terminal/.
+cmake -S engine -B build -G Ninja \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DCMAKE_PREFIX_PATH="$prefix;$prefix/llvm" \
@@ -25,7 +26,6 @@ cmake -B build -G Ninja \
     -DCMAKE_REQUIRE_FIND_PACKAGE_hipblaslt=ON \
     -DFETCHCONTENT_FULLY_DISCONNECTED=ON \
     -DSTRATA_NATIVE_EXPERTS=ON \
-    -DSTRATA_PREFILL_MMQ=ON \
     -DSTRATA_ENABLE_CUDA=OFF \
     -DSTRATA_ENABLE_HIP=ON \
     -DSTRATA_HIP_GFX906="${KISS_STRATA_GFX906:-OFF}" \
@@ -38,7 +38,7 @@ cmake --build build --target strata strata-plan strata-gguf strata-dequant strat
 # via hipBLASLt); STRATA_HIPBLASLT_TABLE=off disables it.
 install -Dm755 build/strata "$1/usr/lib/strata/bin/strata"
 mkdir -p "$1/usr/lib/strata/bin/tuning" "$1/usr/bin"
-cp tools/hip/*-hipblaslt-*.txt "$1/usr/lib/strata/bin/tuning/"
+cp terminal/tools/hip/*-hipblaslt-*.txt "$1/usr/lib/strata/bin/tuning/"
 ln -s ../lib/strata/bin/strata "$1/usr/bin/strata"
 for bin in strata-plan strata-gguf strata-dequant strata-device; do
     install -Dm755 "build/$bin" "$1/usr/bin/$bin"
@@ -46,11 +46,11 @@ done
 install -Dm644 LICENSE "$1/usr/share/licenses/strata/LICENSE"
 install -Dm644 README.md "$1/usr/share/doc/strata/README.md"
 
-# Bundle the upstream Python server, control/CLI packages, tools and data.
+# Bundle the upstream Python server, control/CLI packages, tools and data (all under terminal/ since 0.2.16).
 mkdir -p "$1/usr/lib/strata"
 for d in serve strata_control strata_cli tools data; do
-cp -R "$d" "$1/usr/lib/strata/$d"
+cp -R "terminal/$d" "$1/usr/lib/strata/$d"
 done
-install -Dm644 strata.py "$1/usr/lib/strata/strata.py"
+install -Dm644 terminal/strata.py "$1/usr/lib/strata/strata.py"
 install -Dm755 strata-server "$1/usr/bin/strata-server"
-install -Dm644 requirements.txt "$1/usr/share/doc/strata/requirements-upstream.txt"
+install -Dm644 terminal/requirements.txt "$1/usr/share/doc/strata/requirements-upstream.txt"

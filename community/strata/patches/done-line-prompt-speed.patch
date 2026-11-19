@@ -1,8 +1,6 @@
-diff --git a/serve/server.py b/serve/server.py
-index b5eed400..443e5f38 100644
---- a/serve/server.py
-+++ b/serve/server.py
-@@ -6694,7 +6694,12 @@ class Service:
+--- a/terminal/serve/server.py
++++ b/terminal/serve/server.py
+@@ -5788,7 +5788,12 @@
                              if hit_msg and pcie_share:
                                  hit_msg += f" (+{pcie_share*100:.1f}% of the routed experts over PCIe)"
                              rate_txt = f"{rate:.1f} tok/s" if rate is not None else "no speed"
