@@ -1,92 +1,90 @@
 #!/bin/sh -e
 
+# WebKitGTK 2.54.3. USE_GTK4=OFF is required: 2.54 defaults to GTK4 and only
+# gtk+3 is in depends. Most ENABLE_/USE_ flags below stay OFF because the
+# matching dependency is not installed and configure aborts; they are
+# load-bearing, not noise. Trimmed set verified against 2.54.3: the resulting
+# build.ninja is byte-identical to the old, longer flag list.
+
 export DESTDIR="$1"
 
+# Only affects the gcc fallback: CC=clang below bypasses the
+# /usr/lib/ccache/bin shims, so ccache never sees a clang build.
 export CCACHE_SLOPPINESS=time_macros,include_file_mtime
 
-# Silence loud warnings. Source: Chimera linux
-export CFLAGS="$CFLAGS -DNDEBUG"
-export CXXFLAGS="$CXXFLAGS -DNDEBUG -Wno-deprecated-declarations -Wno-deprecated-copy"
+# -DNDEBUG already comes from CMAKE_{C,CXX}_FLAGS_RELEASE under
+# CMAKE_BUILD_TYPE=Release, so only the warning silencer is needed.
+export CFLAGS="$CFLAGS -Wno-deprecated-declarations"
+export CXXFLAGS="$CXXFLAGS -Wno-deprecated-declarations -Wno-deprecated-copy"
 
 # Use clang if installed, decreases compilation time by 25%.
-if command -v clang; then
-	export CC=clang 
-	export CXX=clang++
+if command -v clang >/dev/null 2>&1; then
+    export CC=clang
+    export CXX=clang++
 fi
 
-# fix unsupported -n or -h flag for sbase ln
-sed 's/ln -sfh/ln -sf/g' Source/WebCore/Scripts/generate-derived-sources.sh > _
-mv -f _ Source/WebCore/Scripts/generate-derived-sources.sh
-chmod 755 Source/WebCore/Scripts/generate-derived-sources.sh
+# sbase ln has no -h, and 'ln -n -s -f' is not supported. Dropped
+# PlatformWPEDeprecated.cmake (WPE-only, never read with PORT=GTK) and the
+# MiniBrowser ngettext patch (dead with ENABLE_MINIBROWSER=OFF).
+for f in \
+    Source/WebCore/Scripts/generate-derived-sources.sh \
+    Source/JavaScriptCore/GLib.cmake \
+    Source/WebKit/PlatformGTK.cmake \
+    Source/WebKit/PlatformGTKDeprecated.cmake
+do
+    sed -i -e 's/ln -sfh/ln -sf/g' -e 's/ln -n -s -f/ln -sf/g' "$f"
+done
 
-sed 's/ln -n -s -f/ln -sf/g' Source/JavaScriptCore/GLib.cmake > _
-mv -f _ Source/JavaScriptCore/GLib.cmake
-
-sed 's/ln -n -s -f/ln -sf/g' Source/WebKit/PlatformGTK.cmake > _
-mv -f _ Source/WebKit/PlatformGTK.cmake
-
-sed 's/ln -n -s -f/ln -sf/g' Source/WebKit/PlatformWPEDeprecated.cmake > _
-mv -f _ Source/WebKit/PlatformWPEDeprecated.cmake
-
-sed 's/ln -n -s -f/ln -sf/g' Source/WebKit/PlatformGTKDeprecated.cmake  > _
-mv -f _ Source/WebKit/PlatformGTKDeprecated.cmake
- 
-# Remove gettext requirement.
-sed 's/ngettext/printf/g' Tools/MiniBrowser/gtk/BrowserDownloadsBar.c > _
-mv -f _ Tools/MiniBrowser/gtk/BrowserDownloadsBar.c
-sed '/po_files \*\.po/d' Source/WebCore/platform/gtk/po/CMakeLists.txt > _
-mv -f _ Source/WebCore/platform/gtk/po/CMakeLists.txt
-sed '/if.*GETTEXT_FOUND/,/^endif/d' Source/WebCore/platform/gtk/po/CMakeLists.txt > _
-mv -f _ Source/WebCore/platform/gtk/po/CMakeLists.txt
-sed '/^GETTEXT_C/d' Source/WebCore/platform/gtk/po/CMakeLists.txt > _
-mv -f _ Source/WebCore/platform/gtk/po/CMakeLists.txt
+# Remove gettext requirement. The old 'po_files \*\.po' expression matched
+# nothing in 2.54; the remaining two run in one pass.
+sed -i -e '/if.*GETTEXT_FOUND/,/^endif/d' -e '/^GETTEXT_C/d' \
+    Source/WebCore/platform/gtk/po/CMakeLists.txt
 
 # Webkit's CMake configuration forces color output using clang-specific flags
-# when using Ninja as the CMAKE_GENERATOR. We should disable them.
-sed -e "s/-fcolor-diagnostics//"  \
-	-e "s/-fdiagnostics-color=always/-fdiagnostics-color=never/" \
-	Source/cmake/WebKitCompilerFlags.cmake > _
-mv -f _ Source/cmake/WebKitCompilerFlags.cmake
+# when using Ninja as the CMAKE_GENERATOR, which breaks a gcc fallback build.
+sed -i -e 's/-fcolor-diagnostics//' \
+    -e 's/-fdiagnostics-color=always/-fdiagnostics-color=never/' \
+    Source/cmake/WebKitCompilerFlags.cmake
 
-# Reduce memory usage.
+# Reduce linker memory usage (bfd ld).
 export LDFLAGS="$LDFLAGS -Wl,--no-keep-memory"
 
+# Dropped as no-ops: ENABLE_API_TESTS and ENABLE_C_LOOP (already OFF here),
+# ENABLE_DOCUMENTATION (follows ENABLE_INTROSPECTION), USE_FLITE (follows
+# ENABLE_SPEECH_SYNTHESIS), USE_SKIA and USE_GSTREAMER_GL (already ON).
+# Keep the two install-dir flags: GNUInstallDirs picks lib64/libexec on this
+# box, so they decide whether WebKitGTK-4.1 lands in /usr/lib at all. Verified:
+# dropping them yields -DLIBDIR="/usr/lib64" in the compile flags.
+# ENABLE_JIT=OFF also drops the biggest chunk of JSC; CLOOP stays off with it.
 cmake -G Ninja -B build \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=/usr \
-    -DCMAKE_INSTALL_LIBEXECDIR=/usr/lib \
     -DLIB_INSTALL_DIR=/usr/lib \
+    -DCMAKE_INSTALL_LIBEXECDIR=/usr/lib \
     -DPORT=GTK \
     -DCMAKE_SKIP_RPATH=ON \
-    -DENABLE_API_TESTS=OFF \
+    -DUSE_GTK4=OFF \
+    -DENABLE_JIT=OFF \
     -DENABLE_BUBBLEWRAP_SANDBOX=OFF \
-    -DENABLE_C_LOOP=OFF \
-    -DENABLE_DOCUMENTATION=OFF \
     -DENABLE_GAMEPAD=OFF \
     -DENABLE_GEOLOCATION=OFF \
     -DENABLE_INTROSPECTION=OFF \
-    -DENABLE_JIT=OFF \
     -DENABLE_JOURNALD_LOG=OFF \
     -DENABLE_MINIBROWSER=OFF \
     -DENABLE_PDFJS=OFF \
     -DENABLE_SAMPLING_PROFILER=OFF \
     -DENABLE_SPELLCHECK=OFF \
-    -DENABLE_WAYLAND_TARGET=OFF \
     -DENABLE_SPEECH_SYNTHESIS=OFF \
-    -DUSE_FLITE=OFF \
+    -DENABLE_WAYLAND_TARGET=OFF \
     -DUSE_AVIF=OFF \
-    -DUSE_GSTREAMER_GL=ON \
-    -DUSE_GTK4=OFF \
     -DUSE_JPEGXL=OFF \
     -DUSE_LCMS=OFF \
     -DUSE_LIBBACKTRACE=OFF \
     -DUSE_LIBHYPHEN=OFF \
     -DUSE_LIBSECRET=OFF \
     -DUSE_WOFF2=OFF \
-    -DUSE_SKIA=ON \
     -DUSE_SKIA_OPENTYPE_SVG=OFF \
-    -DUSE_SYSTEM_SYSPROF_CAPTURE=NO \
+    -DUSE_SYSTEM_SYSPROF_CAPTURE=OFF \
     -Wno-dev
-
-samu -C build
+ 
 samu -C build install
