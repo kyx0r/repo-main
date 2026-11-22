@@ -33,7 +33,7 @@ cmake -S engine -B build -G Ninja \
     -DSTRATA_BUILD_TESTS=OFF
 
 # Upstream has no install rules. Do not build/install all microbenchmarks.
-cmake --build build --target strata strata-plan strata-gguf strata-dequant strata-device
+cmake --build build --target strata strata-plan strata-gguf strata-dequant strata-device strata-inkling
 # The engine loads <its dir>/tuning/<arch>-hipblaslt-<ver>.txt (prompt GEMMs
 # via hipBLASLt); STRATA_HIPBLASLT_TABLE=off disables it.
 install -Dm755 build/strata "$1/usr/lib/strata/bin/strata"
@@ -43,6 +43,7 @@ ln -s ../lib/strata/bin/strata "$1/usr/bin/strata"
 for bin in strata-plan strata-gguf strata-dequant strata-device; do
     install -Dm755 "build/$bin" "$1/usr/bin/$bin"
 done
+install -Dm755 build/src/inkling2/strata-inkling "$1/usr/bin/strata-inkling"
 install -Dm644 LICENSE "$1/usr/share/licenses/strata/LICENSE"
 install -Dm644 README.md "$1/usr/share/doc/strata/README.md"
 
