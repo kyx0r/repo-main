@@ -1,0 +1,6 @@
+cmake make
+rocm-cmake make
+rocm-hip
+rocm-llvm
+rocprim
+samurai make

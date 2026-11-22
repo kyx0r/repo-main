@@ -1,0 +1,4 @@
+#!/bin/sh -e
+# musl dlopen() of bare sonames ignores the caller rpath; add ROCm + torch dirs.
+mkdir -p "$1/etc"
+printf "/lib\n/usr/local/lib\n/usr/lib\n/usr/lib/rocm/lib\n/usr/lib/rocm/llvm/lib\n/usr/lib/python3.14/site-packages/torch/lib\n" > "$1/etc/ld-musl-x86_64.path"

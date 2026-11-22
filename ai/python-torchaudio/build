@@ -1,0 +1,15 @@
+#!/bin/sh -e
+export ROCM_PATH=/usr/lib/rocm HIP_CLANG_PATH=/usr/lib/rocm/llvm/bin
+export PATH="$ROCM_PATH/bin:$PATH"
+export CC=$HIP_CLANG_PATH/clang CXX=$HIP_CLANG_PATH/clang++
+export CXXFLAGS="$CXXFLAGS -include chrono -include format"
+export PYTORCH_ROCM_ARCH=gfx1100 USE_ROCM=1 USE_CUDA=1 USE_OPENMP=1
+export BUILD_CUDA_CTC_DECODER=0 BUILD_CPP_TEST=0
+export BUILD_VERSION=2.11.0 MAX_JOBS="${MAX_JOBS:-24}"
+
+patch -p1 < hip-launch.patch
+# hipify maps CUDA_VERSION -> undefined TORCH_HIP_VERSION
+sed -i "s/return CUDA_VERSION;/return {};/" src/libtorchaudio/utils.cpp
+
+python setup.py build
+python setup.py install --root="$1" --prefix=/usr --optimize=1 --skip-build

@@ -1,0 +1,7 @@
+python
+python-einops
+python-numpy
+python-pytorch
+python-safetensors
+python-torchvision
+python-typing-extensions

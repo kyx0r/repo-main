@@ -1,0 +1,49 @@
+#!/bin/sh -e
+
+prefix=${KISS_ROCM_PREFIX:-/usr/lib/rocm}
+export ROCM_PATH="$prefix" HIP_PATH="$prefix" HIP_PLATFORM=amd
+export HIP_CLANG_PATH="$prefix/llvm/bin"
+export PATH="$prefix/llvm/bin:$prefix/bin:$PATH"
+# musl: no exported _r_debug in gotcha; yaml-cpp lacks <cstdint>
+cp musl_r_debug.h external/gotcha/src/
+for f in gotcha.c gotcha_auxv.c gotcha_dl.c; do
+    sed -i '1i #include "musl_r_debug.h"' external/gotcha/src/$f
+done
+sed -i '1i #include <cstdint>' external/yaml-cpp/src/emitterutils.cpp
+sed -i '1i #include <cstdint>' external/elfio/elfio/elf_types.hpp
+# musl: no GNU basename(); use a local equivalent
+for f in source/lib/output/output_key.cpp source/lib/python/rocpd/source/perfetto.cpp source/lib/rocprofiler-sdk-tool/main.c; do
+    sed -i -e 's/::basename(/gnu_basename(/g' -e 's/\bbasename(__FILE__)/gnu_basename(__FILE__)/g' "$f"
+    sed -i '1i #include <string.h>\nstatic inline const char *gnu_basename(const char *p) { const char *s = strrchr(p, '"'"'/'"'"'); return s ? s + 1 : p; }' "$f"
+done
+# musl: drop glibc-internal __locale_struct printers; __ptrace_request is glibc-only
+awk '/^inline static std::ostream&$/{h=$0; getline; if($0 ~ /const __locale_struct& v\)/){skip=1; next} print h} skip{if($0=="}")skip=0; next} {print}' \
+    source/lib/rocprofiler-sdk/hip/details/ostream.hpp > o.tmp && mv o.tmp source/lib/rocprofiler-sdk/hip/details/ostream.hpp
+sed -i 's/__ptrace_request/int/g' source/lib/rocprofv3-attach/*.cpp source/lib/rocprofv3-attach/*.hpp 2>/dev/null || true
+
+# A semicolon-separated list; use the same targets everywhere.
+archs=${KISS_ROCM_ARCHS:-gfx1100}
+
+cmake -B build -G Ninja \
+    -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX="$prefix" \
+    -DCMAKE_INSTALL_LIBDIR=lib \
+    -DCMAKE_PREFIX_PATH="$prefix;$prefix/llvm" \
+    -DCMAKE_INSTALL_RPATH="$prefix/lib;$prefix/llvm/lib" \
+    -DCMAKE_C_COMPILER="$prefix/llvm/bin/clang" \
+    -DCMAKE_CXX_COMPILER="$prefix/llvm/bin/clang++" \
+    -DROCM_PATH="$prefix" \
+    -DGPU_TARGETS="$archs" \
+    -DAMDGPU_TARGETS="$archs" \
+    -DROCPROFILER_BUILD_TESTS=OFF \
+    -DROCPROFILER_BUILD_SAMPLES=OFF \
+    -DROCPROFILER_BUILD_DOCS=OFF \
+    -DROCPROFILER_BUILD_WERROR=OFF \
+    -DROCPROFILER_BUILD_PYBIND=OFF \
+    -DROCPROFILER_BUILD_GLOG=ON \
+    -DROCPROFILER_BUILD_STATIC_LIBGCC=OFF \
+    -DROCPROFILER_BUILD_STATIC_LIBSTDCXX=OFF \
+    -DBUILD_TESTING=OFF
+cmake --build build
+DESTDIR="$1" cmake --install build

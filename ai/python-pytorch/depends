@@ -1,0 +1,25 @@
+cmake make
+miopen
+hipblas
+hipblaslt
+rocblas
+hipfft
+hiprand
+hipsolver
+hipsparse
+rocthrust
+hipcub
+rccl
+amdsmi
+openblas
+pybind11 make
+python
+python-numpy
+python-scikit-build-core make
+python-six make
+python-typing-extensions
+python-sympy
+python-filelock
+python-networkx
+python-fsspec
+rocm-ld-path

@@ -1,0 +1,22 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -60,7 +60,7 @@
+     if ( NOT DEFINED CMAKE_Fortran_COMPILER AND NOT DEFINED ENV{FC} )
+       set( CMAKE_Fortran_COMPILER  "gfortran" )
+     endif()
+-    set( fortran_language "Fortran" )
++    set( fortran_language "" )
+ endif( )
+ 
+ # hipSPARSE project
+--- a/library/CMakeLists.txt
++++ b/library/CMakeLists.txt
+@@ -142,7 +142,7 @@
+ # Include sources
+ include(src/CMakeLists.txt)
+ 
+-if (NOT WIN32)
++if (FALSE) # no Fortran module
+ # Set Fortran module output directory
+ set(CMAKE_Fortran_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/include/hipsparse)
+ 

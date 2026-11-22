@@ -1,0 +1,7 @@
+python
+python-huggingface-hub
+python-numpy
+python-safetensors
+python-tokenizers
+python-tqdm
+python-typer

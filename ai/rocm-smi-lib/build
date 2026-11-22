@@ -1,0 +1,27 @@
+#!/bin/sh -e
+
+prefix=${KISS_ROCM_PREFIX:-/usr/lib/rocm}
+export ROCM_PATH="$prefix" HIP_PATH="$prefix" HIP_PLATFORM=amd
+export HIP_CLANG_PATH="$prefix/llvm/bin"
+export PATH="$prefix/llvm/bin:$prefix/bin:$PATH"
+
+# A semicolon-separated list; use the same targets everywhere.
+archs=${KISS_ROCM_ARCHS:-gfx1100}
+
+cmake -B build -G Ninja \
+    -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX="$prefix" \
+    -DCMAKE_INSTALL_LIBDIR=lib \
+    -DCMAKE_PREFIX_PATH="$prefix;$prefix/llvm" \
+    -DCMAKE_INSTALL_RPATH="$prefix/lib;$prefix/llvm/lib" \
+    -DCMAKE_C_COMPILER="$prefix/llvm/bin/clang" \
+    -DCMAKE_CXX_COMPILER="$prefix/llvm/bin/clang++" \
+    -DROCM_PATH="$prefix" \
+    -DGPU_TARGETS="$archs" \
+    -DAMDGPU_TARGETS="$archs" \
+    -DBUILD_TESTS=OFF \
+    -DBUILD_SHARED_LIBS=ON \
+    -DBUILD_TESTING=OFF
+cmake --build build
+DESTDIR="$1" cmake --install build

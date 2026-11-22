@@ -1,0 +1,29 @@
+--- a/src/libtorchaudio/iir_cuda.cu
++++ b/src/libtorchaudio/iir_cuda.cu
+@@ -34,6 +34,14 @@
+   }
+ }
+ 
++template <typename scalar_t>
++static void iir_cu_launch(dim3 blocks, dim3 threads, Tensor& in, Tensor& a_flipped, Tensor& padded_out) {
++  iir_cu_kernel<scalar_t><<<blocks, threads>>>(
++      torchaudio::packed_accessor_size_t<scalar_t, 3>(in),
++      torchaudio::packed_accessor_size_t<scalar_t, 2>(a_flipped),
++      torchaudio::packed_accessor_size_t<scalar_t, 3>(padded_out));
++}
++
+ Tensor cuda_lfilter_core_loop(
+     Tensor in,
+     Tensor a_flipped,
+@@ -70,10 +78,7 @@
+ 
+   THO_DISPATCH_V2(
+       in.scalar_type(), "iir_cu_loop", AT_WRAP([&] {
+-        (iir_cu_kernel<scalar_t><<<blocks, threads>>>(
+-            torchaudio::packed_accessor_size_t<scalar_t, 3>(in),
+-            torchaudio::packed_accessor_size_t<scalar_t, 2>(a_flipped),
+-            torchaudio::packed_accessor_size_t<scalar_t, 3>(padded_out)));
++        iir_cu_launch<scalar_t>(blocks, threads, in, a_flipped, padded_out);
+         STD_CUDA_KERNEL_LAUNCH_CHECK();
+         }), AT_FLOATING_TYPES);
+   return padded_out;

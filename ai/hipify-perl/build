@@ -1,0 +1,7 @@
+#!/bin/sh -e
+# Only the standalone perl translator (the clang-based hipify needs LLVM dev).
+prefix=${KISS_ROCM_PREFIX:-/usr/lib/rocm}
+mkdir -p "$1$prefix/bin"
+for f in hipify-perl hipconvertinplace-perl.sh hipexamine-perl.sh; do
+    install -m755 "bin/$f" "$1$prefix/bin/$f"
+done

@@ -1,0 +1,2 @@
+https://github.com/ROCm/rocSOLVER/archive/refs/tags/rocm-7.2.4.tar.gz
+patches/have-rocsparse-noloader.patch

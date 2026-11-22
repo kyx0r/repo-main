@@ -1,0 +1,15 @@
+#!/bin/sh -e
+# Trimmed: only the compiled libs needed by the ROCm stack (MIOpen: filesystem).
+./bootstrap.sh \
+    --prefix="$1/usr" \
+    --without-icu \
+    --with-libraries=filesystem,system,program_options,thread,atomic,chrono,date_time,regex,serialization
+
+./b2 install \
+    variant=release \
+    threading=multi \
+    link=shared \
+    cflags="$CFLAGS -O2" \
+    cxxflags="$CXXFLAGS -O2" \
+    linkflags="$LDFLAGS" \
+    -j"$(nproc)"

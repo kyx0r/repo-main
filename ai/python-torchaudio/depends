@@ -1,0 +1,4 @@
+python
+python-pytorch
+python-setuptools make
+rocm-hip make

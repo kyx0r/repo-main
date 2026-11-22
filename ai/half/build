@@ -1,0 +1,4 @@
+#!/bin/sh -e
+# header-only IEEE half; MIOpen looks for half/half.hpp
+mkdir -p "$1/usr/include/half"
+install -m644 include/half.hpp "$1/usr/include/half/half.hpp"

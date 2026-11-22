@@ -1,0 +1,8 @@
+python
+python-click
+python-filelock
+python-fsspec
+python-hf-xet
+python-httpx2
+python-tqdm
+python-typing-extensions

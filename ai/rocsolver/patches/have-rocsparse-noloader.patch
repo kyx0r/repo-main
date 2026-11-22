@@ -1,0 +1,19 @@
+--- a/library/src/refact/rocsolver_rfinfo.cpp
++++ b/library/src/refact/rocsolver_rfinfo.cpp
+@@ -64,6 +64,7 @@
+ 
+ ROCSOLVER_BEGIN_NAMESPACE
+ 
++#ifndef HAVE_ROCSPARSE
+ template <typename Fn>
+ static bool load_function(void* handle, const char* symbol, Fn& fn)
+ {
+@@ -214,6 +215,8 @@
+     static bool result = load_rocsparse();
+     return result;
+ }
++
++#endif /* HAVE_ROCSPARSE */
+ 
+ ROCSOLVER_END_NAMESPACE
+ 

@@ -1,0 +1,9 @@
+cmake make
+fmt make
+rocblas
+rocm-cmake make
+rocm-hip
+rocm-llvm
+rocprim make
+rocsparse
+samurai make

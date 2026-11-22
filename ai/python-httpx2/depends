@@ -1,0 +1,5 @@
+python
+python-anyio
+python-httpcore2
+python-idna
+python-truststore

@@ -1,0 +1,7 @@
+cmake make
+rocblas
+rocm-cmake make
+rocm-hip
+rocm-llvm
+rocprim make
+samurai make

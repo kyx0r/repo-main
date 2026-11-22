@@ -1,0 +1,12 @@
+#!/bin/sh -e
+export ROCM_PATH=/usr/lib/rocm HIP_CLANG_PATH=/usr/lib/rocm/llvm/bin
+export PATH="$ROCM_PATH/bin:$PATH"
+export CC=$HIP_CLANG_PATH/clang CXX=$HIP_CLANG_PATH/clang++
+export CXXFLAGS="$CXXFLAGS -include chrono -include format"
+export PYTORCH_ROCM_ARCH=gfx1100 FORCE_CUDA=1
+export TORCHVISION_USE_PNG=1 TORCHVISION_USE_JPEG=1 TORCHVISION_USE_WEBP=1
+export TORCHVISION_USE_NVJPEG=0 TORCHVISION_USE_VIDEO_CODEC=0 TORCHVISION_USE_FFMPEG=0
+export BUILD_VERSION=0.30.0 MAX_JOBS="${MAX_JOBS:-24}"
+
+python setup.py build
+python setup.py install --root="$1" --prefix=/usr --optimize=1 --skip-build

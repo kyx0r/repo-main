@@ -1,0 +1,5 @@
+cmake make
+samurai make
+eigen
+functionalplus
+nlohmann-json

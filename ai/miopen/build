@@ -1,0 +1,41 @@
+#!/bin/sh -e
+
+prefix=${KISS_ROCM_PREFIX:-/usr/lib/rocm}
+export ROCM_PATH="$prefix" HIP_PATH="$prefix" HIP_PLATFORM=amd
+export HIP_CLANG_PATH="$prefix/llvm/bin"
+export PATH="$prefix/llvm/bin:$prefix/bin:$PATH"
+sed -i '1i #include <cstdint>' tools/sqlite2txt/main.cpp
+sed -i -E "s/return \{([a-z_]+)\};/return \1;/" src/include/miopen/sqlite_db.hpp src/target_properties.cpp src/find_controls.cpp
+
+# A semicolon-separated list; use the same targets everywhere.
+archs=${KISS_ROCM_ARCHS:-gfx1100}
+
+cmake -B build -G Ninja \
+    -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX="$prefix" \
+    -DCMAKE_INSTALL_LIBDIR=lib \
+    -DCMAKE_PREFIX_PATH="$prefix;$prefix/llvm" \
+    -DCMAKE_INSTALL_RPATH="$prefix/lib;$prefix/llvm/lib" \
+    -DCMAKE_C_COMPILER="$prefix/llvm/bin/clang" \
+    -DCMAKE_CXX_COMPILER="$prefix/llvm/bin/clang++" \
+    -DROCM_PATH="$prefix" \
+    -DGPU_TARGETS="$archs" \
+    -DAMDGPU_TARGETS="$archs" \
+    -DBUILD_SHARED_LIBS=ON \
+    -DMIOPEN_BACKEND=HIP \
+    -DMIOPEN_USE_MLIR=OFF \
+    -DMIOPEN_USE_COMPOSABLEKERNEL=ON \
+    -DMIOPEN_USE_HIPBLASLT=ON \
+    -DMIOPEN_BUILD_DRIVER=OFF \
+    -DMIOPEN_ENABLE_FIN=OFF \
+    -DMIOPEN_ENABLE_AI_KERNEL_TUNING=ON \
+    -DMIOPEN_ENABLE_AI_IMMED_MODE_FALLBACK=ON \
+    -DMIOPEN_TEST_ALL=OFF \
+    -DMIOPEN_USE_MIOPENGEMM=OFF \
+    -DBUILD_DEV=OFF \
+    -DMIOPEN_STRIP_SYMBOLS=ON \
+    -DBoost_USE_STATIC_LIBS=OFF \
+    -DBUILD_TESTING=OFF
+cmake --build build
+DESTDIR="$1" cmake --install build

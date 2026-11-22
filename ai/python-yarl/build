@@ -1,0 +1,2 @@
+#!/bin/sh -e
+python -m installer -d "$1" *.whl

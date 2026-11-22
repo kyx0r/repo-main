@@ -1,0 +1,11 @@
+cmake make
+rocm-cmake make
+rocm-hip
+rocm-llvm
+samurai make
+rocm-runtime
+rocm-smi-lib
+rocprofiler-register
+python
+hipify-perl make
+perl make

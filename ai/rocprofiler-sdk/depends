@@ -1,0 +1,12 @@
+cmake make
+rocm-cmake make
+rocm-hip
+rocm-llvm
+samurai make
+rocm-runtime
+libdrm
+libelf
+sqlite
+python
+rocprofiler-register
+aqlprofile

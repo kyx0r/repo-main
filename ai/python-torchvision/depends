@@ -1,0 +1,7 @@
+python
+python-pytorch
+python-numpy
+libjpeg-turbo
+libpng
+libwebp
+python-setuptools make

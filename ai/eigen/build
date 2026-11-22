@@ -1,0 +1,12 @@
+#!/bin/sh -e
+cmake -B build -G Ninja \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+    -DBUILD_TESTING=OFF \
+    -DFPLUS_BUILD_UNITTEST=OFF \
+    -DFDEEP_BUILD_UNITTEST=OFF \
+    -DEIGEN_BUILD_DOC=OFF \
+    -DEIGEN_BUILD_TESTING=OFF
+cmake --build build
+DESTDIR="$1" cmake --install build

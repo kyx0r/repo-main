@@ -1,0 +1,21 @@
+cmake make
+rocm-cmake make
+rocm-hip
+rocm-llvm
+samurai make
+rocm-runtime
+rocm-comgr
+rocblas
+hipblas-common
+hipblaslt
+composable-kernel
+roctracer
+boost
+bzip2
+sqlite
+zstd
+half
+eigen
+nlohmann-json
+frugally-deep
+functionalplus

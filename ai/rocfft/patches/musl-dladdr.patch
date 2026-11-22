@@ -1,0 +1,21 @@
+--- a/library/src/include/library_path.h
++++ b/library/src/include/library_path.h
+@@ -60,14 +60,11 @@
+ static std::filesystem::path get_library_path_unix()
+ {
+     // get address of rocfft lib by looking for a symbol in it
+-    Dl_info   info;
+-    link_map* map = nullptr;
+-    if(!dladdr1(reinterpret_cast<const void*>(rocfft_plan_create),
+-                &info,
+-                reinterpret_cast<void**>(&map),
+-                RTLD_DL_LINKMAP))
++    // musl: no dladdr1/RTLD_DL_LINKMAP; dladdr gives the object path in dli_fname
++    Dl_info info;
++    if(!dladdr(reinterpret_cast<const void*>(rocfft_plan_create), &info) || !info.dli_fname)
+         throw std::runtime_error("dladdr failed");
+-    return map->l_name;
++    return info.dli_fname;
+ }
+ #endif
+ 

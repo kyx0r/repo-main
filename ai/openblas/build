@@ -1,0 +1,30 @@
+#!/bin/sh -e
+
+export DESTDIR="$1"
+
+case "$(uname)" in
+    Linux) JOBS="$(nproc)" ;;
+    FreeBSD | Darwin | OpenBSD) JOBS="$(sysctl -n hw.ncpu)" ;;
+esac
+
+mk() {
+    make \
+        PREFIX=/usr \
+        USE_OPENMP=0 \
+        NO_LAPACK=0 \
+        NO_AFFINITY=1 \
+        NO_STATIC=1 \
+        INTERFACE64=0 NOFORTRAN=1 C_LAPACK=1 TARGET=ZEN DYNAMIC_ARCH=1 \
+        NUM_THREADS="${JOBS:-1}" \
+        MAJOR_VERSION=3 \
+        "$@"
+}
+
+# shellcheck disable=2097,2098
+CFLAGS='' mk CFLAGS="$CPPFLAGS $CFLAGS"
+mk install
+
+# Create symlinks so it can be swapped via `kiss alt`.
+ln -s /usr/lib/libopenblas.so        "$1/usr/lib/libblas.so"
+ln -s /usr/lib/libopenblas.so.3      "$1/usr/lib/libblas.so.3"
+ln -s /usr/lib/pkgconfig/openblas.pc "$1/usr/lib/pkgconfig/blas.pc"

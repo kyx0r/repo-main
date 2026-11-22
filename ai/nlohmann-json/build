@@ -1,0 +1,8 @@
+#!/bin/sh -e
+cmake -B build -G Ninja \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DJSON_BuildTests=OFF \
+    -DJSON_MultipleHeaders=ON
+cmake --build build
+DESTDIR="$1" cmake --install build
