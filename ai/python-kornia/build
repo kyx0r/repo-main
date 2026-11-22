@@ -1,5 +1,5 @@
 #!/bin/sh -e
-python -m installer -d "$1" *.whl
+python -m installer -d "$1" ./*.whl
 
 # kornia_rs (Rust, no musl wheel) is only needed for kornia.io file I/O
 sed -i 's/^from kornia_rs import io as _rs_io$/try:\n    from kornia_rs import io as _rs_io\nexcept ImportError:\n    _rs_io = None/' \
