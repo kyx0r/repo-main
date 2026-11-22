@@ -46,13 +46,12 @@ executables.
 |                                                                              |
 +------------------------------------------------------------------------------+
 
-If using clang as the system compiler the setup is a little different. Do the
-above step and in addition, create the following symbolic links.
+If clang is installed when ccache is built, the clang and clang++ wrappers are
+installed by the package itself; rebuild ccache if clang is installed later.
 
 +------------------------------------------------------------------------------+
 |                                                                              |
-|  $ ln -s /usr/bin/ccache /usr/lib/ccache/bin/clang                           |
-|  $ ln -s /usr/bin/ccache /usr/lib/ccache/bin/clang++                         |
+|  $ kiss b ccache                                                             |
 |                                                                              |
 +------------------------------------------------------------------------------+
 

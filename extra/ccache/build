@@ -26,3 +26,12 @@ for link in \
 do
     ln -sf /usr/bin/ccache "$1/usr/lib/ccache/bin/$link"
 done
+
+# Clang isn't in ccache's shim list. Add it only when clang is installed: a
+# dangling shim would make `command -v clang` succeed and would then fool the
+# gcc fallback used by packages such as webkit2gtk.
+if command -v clang >/dev/null 2>&1; then
+    for link in clang clang++; do
+        ln -sf /usr/bin/ccache "$1/usr/lib/ccache/bin/$link"
+    done
+fi
