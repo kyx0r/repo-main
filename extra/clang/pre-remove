@@ -1,0 +1,13 @@
+#!/bin/sh
+
+# The ccache package links /usr/lib/ccache/bin/clang[++] to /usr/bin/ccache
+# when clang happens to be installed at build time. Remove those shims along
+# with this package: the links point at ccache, not at clang, so they survive
+# and keep `clang` resolvable on PATH. ccache then can't exec the real
+# compiler, and `command -v clang` still succeeds, which defeats the gcc
+# fallback in packages like webkit2gtk.
+for link in /usr/lib/ccache/bin/clang /usr/lib/ccache/bin/clang++; do
+    if [ -L "$link" ] && [ "$(readlink "$link")" = /usr/bin/ccache ]; then
+        rm -f "$link"
+    fi
+done
