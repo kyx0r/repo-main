@@ -6,4 +6,7 @@ patches/inkling-done-reused.patch
 patches/inkling-keep-thinking.patch
 patches/inkling-effort.patch
 patches/inkling-hip-swa-ctrl.patch
+patches/inkling-hip-swa-ring.patch
+patches/inkling-thinking-budget.patch
+patches/inkling-long-period-loop.patch
 strata-server

@@ -12,6 +12,9 @@ patch -p1 < inkling-done-reused.patch
 patch -p1 < inkling-keep-thinking.patch
 patch -p1 < inkling-effort.patch
 patch -p1 < inkling-hip-swa-ctrl.patch
+patch -p1 < inkling-hip-swa-ring.patch
+patch -p1 < inkling-thinking-budget.patch
+patch -p1 < inkling-long-period-loop.patch
 
 archs=${KISS_ROCM_ARCHS:-gfx1100}
 # 0.2.16 split the repo: the CMake engine is engine/, the Python app (serve, strata_cli, strata_control, tools, data) is terminal/.

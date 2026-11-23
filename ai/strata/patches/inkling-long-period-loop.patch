@@ -1,0 +1,49 @@
+total 52K    
+-rw-rw-r--    1 root       11.8K Nov 22 16:07 README.md
+-rw-rw-r--    1 root        7.0K Nov 22 16:07 AGENTS.md
+-rwxrwxr-x    1 root        4.3K Nov 22 16:07 setup.sh
+-rw-rw-r--    1 root        3.9K Nov 22 16:07 SUPPORTERS.md
+-rw-rw-r--    1 root        3.4K Nov 22 16:07 START-HERE.bat
+-rw-rw-r--    1 root        2.9K Nov 22 16:07 .gitignore
+drwxrwxr-x   12 root        1.8K Nov 23 13:12 docs
+-rw-rw-r--    1 root        1.7K Nov 22 16:07 .gitattributes
+-rw-rw-r--    1 root        1.1K Nov 22 16:07 LICENSE
+drwxrwxr-x   10 root         660 Nov 23 13:11 tools
+-rw-rw-r--    1 root         575 Nov 22 16:07 UPDATE.bat
+drwxrwxr-x   13 root         420 Nov 23 13:11 terminal
+drwxrwxr-x    8 root         340 Nov 23 13:11 .
+drwxrwxr-x   11 root         260 Nov 23 13:11 engine
+drwxrwxr-x    5 root         180 Nov 23 13:11 .github
+drwxrwxr-x    4 root          80 Nov 23 13:11 app
+drwxr-xr-x    3 root          60 Nov 23 13:11 ..
+--- a/engine/src/inkling2/ink_serve.h
++++ b/engine/src/inkling2/ink_serve.h
+@@ -226,8 +226,11 @@
+ inline bool detect_repetition_loop(const std::vector<int32_t>& gen_ids) noexcept {
+     const size_t n = gen_ids.size();
+     if (n < 96) return false;
+-    for (size_t period = 1; period <= 32; ++period) {
+-        const size_t need_reps = (period <= 4) ? 24 : 10;
++    // PR #6707: periods <= 32 are blind to prose loops whose cycle is a whole stanza (~200 tokens),
++    // which ran until the client aborted or max_tokens. Long periods (33..512) need 3 exact repeats:
++    // a loop proves itself in three turns of its cycle, while a real refrain costs one extra occurrence.
++    for (size_t period = 1; period <= 512; ++period) {
++        const size_t need_reps = (period <= 4) ? 24 : (period <= 32) ? 10 : 3;
+         if (n < period * need_reps) continue;
+         bool match = true;
+         for (size_t k = 0; k < period * (need_reps - 1); ++k) {
+--- a/terminal/serve/server.py
++++ b/terminal/serve/server.py
+@@ -5898,6 +5898,12 @@
+                             segment_done = getattr(self.engine, "last", None)
+                             if segment_done is not None and segment_done is not segment_before:
+                                 segments.append(dict(segment_done))
++                                # the engine ended the pass itself (its repetition-loop guard sends DONE "stop"
++                                # with no stop token): report "stop", not the "length" this loop starts with
++                                if (finish == "length" and not (wrap or opens or nonfinite) and not cancel.is_set()
++                                        and isinstance(segment_done, dict) and segment_done.get("finish") == "stop"
++                                        and n < max_new):
++                                    finish = "stop"
+                         if nonfinite and not cancel.is_set():
+                             # #879: the engine emitted none of the poisoned window's tokens and reads its next prompt
+                             # from token 0.  Nothing sent yet: the same request once more, unseen by the client
