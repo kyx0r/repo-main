@@ -1,6 +1,6 @@
 --- a/terminal/serve/server.py
 +++ b/terminal/serve/server.py
-@@ -5788,7 +5788,12 @@
+@@ -6127,7 +6127,12 @@
                              if hit_msg and pcie_share:
                                  hit_msg += f" (+{pcie_share*100:.1f}% of the routed experts over PCIe)"
                              rate_txt = f"{rate:.1f} tok/s" if rate is not None else "no speed"

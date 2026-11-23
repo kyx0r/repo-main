@@ -1,0 +1,93 @@
+--- a/terminal/serve/inkling_dialect.py
++++ b/terminal/serve/inkling_dialect.py
+@@ -189,7 +189,9 @@
+         if not chunk:
+             return
+         if self.state == "think":
+-            # Inkling-2-Mini has no thinking mode (off / "none" only): silently discard any raw <|content_thinking|> span.
++            # Inkling-2-Mini always opens a <|content_thinking|> span, even at effort 0: pass it on as reasoning
++            # (reasoning_content) so clients can log and replay it, and the thinking budget sees it.
++            out.append(("reasoning", chunk))
+             return
+         elif self.state in ("idle", "text"):
+             out.append(("content", chunk))
+--- a/terminal/serve/test_inkling_dialect.py
++++ b/terminal/serve/test_inkling_dialect.py
+@@ -14,16 +14,16 @@
+ 
+ 
+ class TestInklingDialect(unittest.TestCase):
+-    def test_streaming_thinking_discarded_and_text_byte_by_byte(self):
++    def test_streaming_thinking_kept_and_text_byte_by_byte(self):
+         raw = (
+             "<|message_model|><|content_thinking|>Let me check 2 + 2 = 4.<|end_message|>"
+             "<|message_model|><|content_text|>The answer is 4.<|end_message|>"
+             "<|content_model_end_sampling|>"
+         )
+-        # Feed 1 character at a time: raw <|content_thinking|> is silently discarded (no thinking mode), text streams cleanly
++        # Feed 1 character at a time: raw <|content_thinking|> comes out as reasoning, text streams cleanly
+         d = inkling_dialect.InklingDialect()
+         out = "".join(d.feed(ch) for ch in raw) + d.feed(final=True)
+-        self.assertEqual(out, "The answer is 4.")
++        self.assertEqual(out, "<think>Let me check 2 + 2 = 4.</think>The answer is 4.")
+         self.assertEqual(d.calls, 0)
+ 
+     def test_tool_call_preserves_xml_chars_quotes_and_closing_tags(self):
+@@ -57,7 +57,7 @@
+             elif ev.kind == "tool_call" and ev.call is not None:
+                 tool_calls.append({"name": ev.call.name, "arguments": ev.call.arguments})
+ 
+-        self.assertEqual("".join(reasoning_parts), "")
++        self.assertEqual("".join(reasoning_parts), "Writing patch with < and > and </tool_call>.")
+         self.assertEqual("".join(content_parts), "")
+         self.assertEqual(len(tool_calls), 1)
+         self.assertEqual(tool_calls[0]["name"], "write_file")
+@@ -294,7 +294,7 @@
+             "<|message_model|><|content_thinking|>internal plan"
+             "<|content_text|>Visible YAML answer.<|end_message|>"
+         )
+-        self.assertEqual(inkling_dialect.translate(direct_exit), "Visible YAML answer.")
++        self.assertEqual(inkling_dialect.translate(direct_exit), "<think>internal plan</think>Visible YAML answer.")
+ 
+         # 4. Truncated non-JSON inside <|content_invoke_tool_json|> on final=True releases text instead of bogus raw call
+         truncated_prose = "<|message_model|>search_web<|content_invoke_tool_json|>services:\n  db:\n    image: postgres:16"
+--- a/terminal/serve/test_inkling_e2e.py
++++ b/terminal/serve/test_inkling_e2e.py
+@@ -374,7 +374,7 @@
+         reason = "".join(e.text for e in events if e.kind == "reasoning")
+         content = "".join(e.text for e in events if e.kind == "content")
+         calls = [e.call for e in events if e.kind == "tool_call"]
+-        self.assertEqual(reason, "")
++        self.assertEqual(reason, "Let me check Tokyo weather.")
+         self.assertIn("Checking now.", content)
+         self.assertEqual(len(calls), 1)
+         self.assertEqual(calls[0].name, "get_weather")
+--- a/terminal/serve/test_inkling_serve_e2e.py
++++ b/terminal/serve/test_inkling_serve_e2e.py
+@@ -257,7 +257,7 @@
+                     "messages": [{"role": "user", "content": "Say hi"}],
+                 })
+                 msg1 = r1["choices"][0]["message"]
+-                self.assertFalse(msg1.get("reasoning_content"))
++                self.assertEqual(msg1.get("reasoning_content"), "Quick thought.")
+                 self.assertEqual(msg1["content"], "Hello from Inkling!")
+ 
+                 # 2. Tool call round-trip with XML special chars
+@@ -295,7 +295,7 @@
+                     "messages": [{"role": "user", "content": "Ping"}],
+                 })
+                 blocks = {b["type"]: b for b in r4["content"]}
+-                self.assertNotIn("thinking", blocks)
++                self.assertEqual(blocks["thinking"]["thinking"], "Anthropic check.")
+                 self.assertEqual(blocks["text"]["text"], "Anthropic OK.")
+ 
+                 # Verify wire protocol recorded exact reasoning effort levels & image= key
+@@ -331,7 +331,7 @@
+                     self.assertEqual(len(results), conc)
+                     for txt, thk in results:
+                         self.assertEqual(txt, "Batch OK.", f"failed at c={conc}")
+-                        self.assertEqual(thk, "", f"unexpected reasoning leaked at c={conc}")
++                        self.assertEqual(thk, "Parallel slot.", f"reasoning lost at c={conc}")
+ 
+ 
+ if __name__ == "__main__":

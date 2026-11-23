@@ -1,6 +1,6 @@
 --- a/engine/src/qwen35/q36_engine.cu
 +++ b/engine/src/qwen35/q36_engine.cu
-@@ -290,7 +290,7 @@
+@@ -341,7 +341,7 @@
      const int half = n_rot / 2;
      if (i < n_rot) {
          const int p = i < half ? i : i - half;

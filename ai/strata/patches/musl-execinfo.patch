@@ -1,6 +1,6 @@
 --- a/engine/src/program/generate.cpp
 +++ b/engine/src/program/generate.cpp
-@@ -144,7 +144,9 @@
+@@ -152,7 +152,9 @@
  #include "strata/program/batch_groups.hpp"
  #include "strata/program/par_counters.hpp"
  #if defined(__linux__)
@@ -10,7 +10,7 @@
  #include <fcntl.h>
  #include <signal.h>
  #include <unistd.h>
-@@ -350,7 +352,7 @@
+@@ -359,7 +361,7 @@
      return buf;
  }
  
