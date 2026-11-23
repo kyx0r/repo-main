@@ -1,0 +1,11 @@
+--- a/terminal/serve/server.py
++++ b/terminal/serve/server.py
+@@ -1187,6 +1187,8 @@
+                      "decode_ms": float(f[4]), "finish": f[5]}
+         if len(f) >= 9:                                   # the conversation cache's fields (engine 0.1.3+)
+             self.last.update(drafts_accepted=int(f[6]), drafts_offered=int(f[7]), reused=int(f[8]))
++        elif getattr(self, "reused", 0):                  # strata-inkling: a 6-field DONE, the reused prefix came on RESUME;
++            self.last["reused"] = int(self.reused)        # without it every cached token counted as read (20,000+ tok/s)
+         if len(f) >= 11:                                  # decode hit rate fields
+             self.last.update(hits=int(f[9]), lookups=int(f[10]))
+         if len(f) >= 14:                                  # the expert tiers (engine 0.1.31+): RAM / file blobs, file MB

@@ -2,4 +2,5 @@ https://github.com/Niko1221/Strata/archive/refs/tags/v0.2.19.tar.gz
 patches/strata-0.1.45-hip-fixes.patch
 patches/musl-execinfo.patch
 patches/done-line-prompt-speed.patch
+patches/inkling-done-reused.patch
 strata-server
