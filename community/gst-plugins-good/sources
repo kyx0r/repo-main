@@ -1,1 +1,2 @@
 https://gstreamer.freedesktop.org/src/gst-plugins-good/gst-plugins-good-1.29.2.tar.xz
+patches/matroska-seek-range-before-first.patch

@@ -2,6 +2,8 @@
 
 export DESTDIR="$1"
 
+patch -p1 < matroska-seek-range-before-first.patch
+
 meson setup \
     -Dprefix=/usr \
     -Dtests=disabled \

@@ -1,0 +1,73 @@
+--- a/gst/matroska/matroska-demux.c
++++ b/gst/matroska/matroska-demux.c
+@@ -4749,6 +4749,32 @@
+   return ret;
+ }
+ 
++/* Create a new seek range in front of the current first range, for a
++ * timestamp earlier than anything seen so far. It ends where the old head
++ * starts, so the normal merge logic can join the two later. */
++static gboolean
++gst_matroska_demux_prepend_seek_range (GstMatroskaDemux * demux,
++    GstClockTime start_time, GstClockTime end_time)
++{
++  GstMatroskaSeekRange *head = demux->seek_ranges->data;
++  GstMatroskaSeekRange *new_range = g_new (GstMatroskaSeekRange, 1);
++
++  new_range->start_time = start_time;
++  new_range->cur_end_time = new_range->last_index_time =
++      MIN (end_time, head->start_time);
++  new_range->end_time = head->start_time;
++
++  demux->seek_ranges = g_list_prepend (demux->seek_ranges, new_range);
++  demux->current_seek_range = demux->seek_ranges;
++
++  GST_LOG_OBJECT (demux,
++      "Prepended seek range: time %" GST_TIMEP_FORMAT " - %" GST_TIMEP_FORMAT
++      " (end %" GST_TIMEP_FORMAT ")", &new_range->start_time,
++      &new_range->cur_end_time, &new_range->end_time);
++
++  return TRUE;                  /* Always a new point, index it */
++}
++
+ /* Check if the new time-index would extend the current dynamic seek index'
+  * range or if it's already within a known region
+  * Return FALSE if this point is within an existing range and does not need indexing */
+@@ -4815,7 +4841,11 @@
+       }
+     }
+ 
+-    g_assert (l != NULL);       /* We must have found an entry, because they cover the entire timeline */
++    if (l == NULL) {
++      /* Before the first range, see the reverse-walk case below */
++      return gst_matroska_demux_prepend_seek_range (demux, start_time,
++          end_time);
++    }
+     GstMatroskaSeekRange *range = l->data;
+     GST_LOG_OBJECT (demux,
+         "Timestamp lands in seek range: time %" GST_TIMEP_FORMAT
+@@ -4834,8 +4864,6 @@
+   if (start_time < range->start_time) {
+     /* We're walking backward, so we need to find the correct range */
+     GList *l = demux->current_seek_range;
+-    g_assert (l->prev != NULL); /* We can't be *before* the first range */
+-
+     while (l->prev) {
+       GList *prev = l->prev;
+       GstMatroskaSeekRange *r = prev->data;
+@@ -4845,6 +4873,15 @@
+         break;
+       }
+       l = prev;
++    }
++
++    if (start_time < range->start_time) {
++      /* Before the first range (seek ranges begin at the first timestamp
++       * seen, not at 0, e.g. MSE appended a later segment first). Prepend
++       * a new head range instead of asserting. */
++      g_assert (l->prev == NULL);
++      return gst_matroska_demux_prepend_seek_range (demux, start_time,
++          end_time);
+     }
+ 
+     GST_LOG_OBJECT (demux, "timestamp moved backward into range %"
