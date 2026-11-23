@@ -4,4 +4,6 @@ patches/musl-execinfo.patch
 patches/done-line-prompt-speed.patch
 patches/inkling-done-reused.patch
 patches/inkling-keep-thinking.patch
+patches/inkling-effort.patch
+patches/inkling-hip-swa-ctrl.patch
 strata-server
