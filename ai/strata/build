@@ -9,11 +9,6 @@ patch -p1 < strata-0.1.45-hip-fixes.patch
 patch -p1 < musl-execinfo.patch
 patch -p1 < done-line-prompt-speed.patch
 patch -p1 < inkling-done-reused.patch
-patch -p1 < inkling-keep-thinking.patch
-patch -p1 < inkling-effort.patch
-patch -p1 < inkling-hip-swa-ctrl.patch
-patch -p1 < inkling-hip-swa-ring.patch
-patch -p1 < inkling-thinking-budget.patch
 patch -p1 < inkling-long-period-loop.patch
 
 archs=${KISS_ROCM_ARCHS:-gfx1100}
